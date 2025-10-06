@@ -1,0 +1,50 @@
+<div class="container mt-4">
+      <h2>Users</h2>
+      <div class="mb-3">
+        <h3>Create User</h3>
+        <form (ngSubmit)="createUser()">
+          <div class="row">
+            <div class="col-md-2">
+              <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="user.firstName" name="firstName" required>
+            </div>
+            <div class="col-md-2">
+              <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="user.lastName" name="lastName" required>
+            </div>
+            <div class="col-md-3">
+              <input type="email" class="form-control" placeholder="Email" [(ngModel)]="user.email" name="email" required>
+            </div>
+            <div class="col-md-2">
+              <input type="text" class="form-control" placeholder="Phone Number" [(ngModel)]="user.phoneNumber" name="phoneNumber" required>
+            </div>
+            <div class="col-md-2">
+              <select class="form-control" [(ngModel)]="user.role" name="role" required>
+                <option value="SUPER_ADMIN">Super Admin</option>
+                <option value="ADMIN">Admin</option>
+                <option value="PARENT">Parent</option>
+              </select>
+            </div>
+            <div class="col-md-1">
+              <button type="submit" class="btn btn-primary">Create</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let user of users">
+            <td>{{ user.firstName }} {{ user.lastName }}</td>
+            <td>{{ user.email }}</td>
+            <td>{{ user.phoneNumber }}</td>
+            <td>{{ user.role }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>

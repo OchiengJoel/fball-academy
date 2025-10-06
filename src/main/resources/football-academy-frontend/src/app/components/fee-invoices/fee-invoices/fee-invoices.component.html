@@ -1,0 +1,66 @@
+<div class="container mt-4">
+      <h2>Fee Invoices</h2>
+      <div *ngIf="user?.role === 'ADMIN'" class="mb-3">
+        <h3>Create Invoice</h3>
+        <form (ngSubmit)="createInvoice()">
+          <div class="row">
+            <div class="col-md-3">
+              <select class="form-control" [(ngModel)]="invoice.kidId" name="kidId" required>
+                <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <select class="form-control" [(ngModel)]="invoice.feeScheduleId" name="feeScheduleId" required>
+                <option *ngFor="let schedule of feeSchedules" [value]="schedule.feeScheduleId">{{ schedule.description }}</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <input type="date" class="form-control" [(ngModel)]="invoice.dueDate" name="dueDate" required>
+            </div>
+            <div class="col-md-3">
+              <button type="submit" class="btn btn-primary">Create Invoice</button>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="mb-3">
+        <h3>Filter Invoices</h3>
+        <div class="row">
+          <div class="col-md-3">
+            <select class="form-control" [(ngModel)]="selectedKidId" (change)="loadInvoices()">
+              <option value="">Select Kid</option>
+              <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadInvoices()">
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadInvoices()">
+          </div>
+        </div>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Invoice ID</th>
+            <th>Kid</th>
+            <th>Fee Schedule</th>
+            <th>Amount</th>
+            <th>Due Date</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let invoice of invoices">
+            <td>{{ invoice.invoiceId }}</td>
+            <td>{{ invoice.kid.firstName }} {{ invoice.kid.lastName }}</td>
+            <td>{{ invoice.feeSchedule.description }}</td>
+            <td>{{ invoice.amount | currency }}</td>
+            <td>{{ invoice.dueDate }}</td>
+            <td>{{ invoice.status }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <h3 *ngIf="selectedKidId">Outstanding Balance: {{ balance | currency }}</h3>
+    </div>

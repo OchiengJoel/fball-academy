@@ -1,0 +1,74 @@
+<div class="container mt-4">
+  <h2>Statements</h2>
+  <div class="mb-3">
+    <h3>Generate Statement</h3>
+    <form (ngSubmit)="generateStatement()">
+      <div class="row">
+        <div class="col-md-3">
+          <select class="form-control" [(ngModel)]="statement.kidId" name="kidId" required>
+            <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input type="date" class="form-control" [(ngModel)]="statement.periodStart" name="periodStart" required>
+        </div>
+        <div class="col-md-3">
+          <input type="date" class="form-control" [(ngModel)]="statement.periodEnd" name="periodEnd" required>
+        </div>
+        <div class="col-md-3">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" [(ngModel)]="statement.includeDetails"
+              name="includeDetails">
+            <label class="form-check-label">Include Details</label>
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary mt-2">Generate Statement</button>
+    </form>
+  </div>
+  <table *ngIf="statementResult" class="table table-striped">
+    <thead>
+      <tr>
+        <th>Statement ID</th>
+        <th>Kid</th>
+        <th>Period</th>
+        <th>Total Due</th>
+        <th>Total Paid</th>
+        <th>Status</th>
+        <th>PDF</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ statementResult.statementId }}</td>
+        <td>{{ statementResult.kid.firstName }} {{ statementResult.kid.lastName }}</td>
+        <td>{{ statementResult.periodStart }} - {{ statementResult.periodEnd }}</td>
+        <td>{{ statementResult.totalDue | currency }}</td>
+        <td>{{ statementResult.totalPaid | currency }}</td>
+        <td>{{ statementResult.status }}</td>
+        <td><a [href]="statementResult.pdfUrl" target="_blank">Download</a></td>
+      </tr>
+    </tbody>
+  </table>
+  <div *ngIf="statementResult && statementResult.entries && statementResult.entries.length > 0">
+    <h3>Statement Entries</h3>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Amount</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let entry of statementResult.entries">
+          <td>{{ entry.date }}</td>
+          <td>{{ entry.type }}</td>
+          <td>{{ entry.amount | currency }}</td>
+          <td>{{ entry.balance | currency }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

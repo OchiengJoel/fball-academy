@@ -1,0 +1,12 @@
+.dialog-container {
+  min-width: 600px;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.card-title {
+  color: #007bff;
+}

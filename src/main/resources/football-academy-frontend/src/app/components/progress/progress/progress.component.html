@@ -1,0 +1,80 @@
+<div class="container mt-4">
+      <h2>Player Progress</h2>
+      <div *ngIf="user?.role === 'ADMIN'" class="mb-3">
+        <h3>Add Progress</h3>
+        <form (ngSubmit)="addProgress()">
+          <div class="row">
+            <div class="col-md-3">
+              <select class="form-control" [(ngModel)]="progress.kid.kidId" name="kidId" required>
+                <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+              </select>
+            </div>
+            <div class="col-md-3">
+              <input type="date" class="form-control" [(ngModel)]="progress.date" name="date" required>
+            </div>
+            <div class="col-md-2">
+              <input type="number" class="form-control" placeholder="Goals" [(ngModel)]="progress.goalsScored" name="goalsScored">
+            </div>
+            <div class="col-md-2">
+              <input type="number" class="form-control" placeholder="Assists" [(ngModel)]="progress.assists" name="assists">
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-primary">Add Progress</button>
+            </div>
+          </div>
+          <div class="mt-2">
+            <textarea class="form-control" placeholder="Coach Notes" [(ngModel)]="progress.coachNotes" name="coachNotes"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="mb-3">
+        <h3>Filter Progress</h3>
+        <div class="row">
+          <div class="col-md-3">
+            <select class="form-control" [(ngModel)]="selectedKidId" (change)="loadProgress()">
+              <option value="">Select Kid</option>
+              <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+            </select>
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadProgress()">
+          </div>
+          <div class="col-md-3">
+            <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadProgress()">
+          </div>
+        </div>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Kid</th>
+            <th>Goals</th>
+            <th>Assists</th>
+            <th>Coach Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let progress of progressPage.content">
+            <td>{{ progress.date }}</td>
+            <td>{{ progress.kid.firstName }} {{ progress.kid.lastName }}</td>
+            <td>{{ progress.goalsScored || 0 }}</td>
+            <td>{{ progress.assists || 0 }}</td>
+            <td>{{ progress.coachNotes || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+      <nav>
+        <ul class="pagination">
+          <li class="page-item" [class.disabled]="pageable.pageNumber === 0">
+            <a class="page-link" (click)="changePage(pageable.pageNumber - 1)">Previous</a>
+          </li>
+          <li class="page-item" *ngFor="let page of pages" [class.active]="pageable.pageNumber === page">
+            <a class="page-link" (click)="changePage(page)">{{ page + 1 }}</a>
+          </li>
+          <li class="page-item" [class.disabled]="pageable.pageNumber === totalPages - 1">
+            <a class="page-link" (click)="changePage(pageable.pageNumber + 1)">Next</a>
+          </li>
+        </ul>
+      </nav>
+    </div>

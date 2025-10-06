@@ -1,0 +1,16 @@
+<div class="sidebar bg-dark text-white d-flex flex-column p-3">
+  <div class="sidebar-header mb-4">
+    <h4 class="text-center">Football Academy</h4>
+  </div>
+  <nav class="nav flex-column">
+    <a class="nav-link text-white" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    <a class="nav-link text-white" routerLink="/kids" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Kids</a>
+    <a class="nav-link text-white" routerLink="/fee-invoices" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Fee Invoices</a>
+    <a class="nav-link text-white" routerLink="/payments" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Payments</a>
+    <a class="nav-link text-white" routerLink="/progress" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Progress</a>
+    <a class="nav-link text-white" routerLink="/statements" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Statements</a>
+    <a class="nav-link text-white" routerLink="/fee-schedules" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Fee Schedules</a>
+    <a class="nav-link text-white" routerLink="/notifications" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Notifications</a>
+    <a class="nav-link text-white" routerLink="/users" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Users</a>
+  </nav>
+</div>

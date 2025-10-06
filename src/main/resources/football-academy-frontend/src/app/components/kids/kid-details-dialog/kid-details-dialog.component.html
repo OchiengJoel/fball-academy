@@ -1,0 +1,124 @@
+<div class="dialog-container">
+  <h2 mat-dialog-title>{{ kid.firstName }} {{ kid.lastName }} Details</h2>
+  <mat-dialog-content>
+    <mat-tab-group>
+      <!-- Statement Tab -->
+      <mat-tab label="Statement">
+        <div class="p-3">
+          <div class="row mb-3">
+            <div class="col-md-4">
+              <input type="date" class="form-control" [(ngModel)]="statementPeriodStart" (change)="loadStatement()">
+            </div>
+            <div class="col-md-4">
+              <input type="date" class="form-control" [(ngModel)]="statementPeriodEnd" (change)="loadStatement()">
+            </div>
+            <div class="col-md-4">
+              <div class="form-check">
+                <input type="checkbox" class="form-check-input" [(ngModel)]="includeDetails" (change)="loadStatement()">
+                <label class="form-check-label">Include Details</label>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
+            <button class="btn btn-primary me-2" (click)="exportStatement('pdf')">Export to PDF</button>
+            <button class="btn btn-primary" (click)="exportStatement('excel')">Export to Excel</button>
+          </div>
+          <table *ngIf="statement" class="table table-striped">
+            <thead>
+              <tr>
+                <th>Statement ID</th>
+                <th>Kid</th>
+                <th>Period</th>
+                <th>Total Due</th>
+                <th>Total Paid</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>{{ statement.statementId }}</td>
+                <td>{{ statement.kid.firstName }} {{ statement.kid.lastName }}</td>
+                <td>{{ statement.periodStart }} - {{ statement.periodEnd }}</td>
+                <td>{{ statement.totalDue | currency }}</td>
+                <td>{{ statement.totalPaid | currency }}</td>
+                <td>{{ statement.status }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <div *ngIf="statement && statement.entries && statement.entries.length > 0">
+            <h4>Statement Entries</h4>
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let entry of statement.entries">
+                  <td>{{ entry.date }}</td>
+                  <td>{{ entry.type }}</td>
+                  <td>{{ entry.amount | currency }}</td>
+                  <td>{{ entry.balance | currency }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Fee Schedules Tab -->
+      <mat-tab label="Fee Schedules">
+        <div class="p-3">
+          <button class="btn btn-primary me-2 mb-3" (click)="exportFeeSchedules('pdf')">Export to PDF</button>
+          <button class="btn btn-primary mb-3" (click)="exportFeeSchedules('excel')">Export to Excel</button>
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Amount</th>
+                <th>Type</th>
+                <th>Recurrence</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let schedule of feeSchedules">
+                <td>{{ schedule.description }}</td>
+                <td>{{ schedule.amount | currency }}</td>
+                <td>{{ schedule.type }}</td>
+                <td>{{ schedule.recurrenceInterval || '-' }}</td>
+                <td>{{ schedule.startDate || '-' }}</td>
+                <td>{{ schedule.endDate || '-' }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </mat-tab>
+
+      <!-- Profile Summary Tab -->
+      <mat-tab label="Profile Summary">
+        <div class="p-3">
+          <button class="btn btn-primary me-2 mb-3" (click)="exportProfileSummary('pdf')">Export to PDF</button>
+          <button class="btn btn-primary mb-3" (click)="exportProfileSummary('excel')">Export to Excel</button>
+          <div class="card">
+            <div class="card-body">
+              <h5 class="card-title">{{ kid.firstName }} {{ kid.lastName }}</h5>
+              <p><strong>Code:</strong> {{ kid.code }}</p>
+              <p><strong>Date of Birth:</strong> {{ kid.dateOfBirth }}</p>
+              <p><strong>Enrollment Date:</strong> {{ kid.enrollmentDate }}</p>
+              <p><strong>Status:</strong> {{ kid.status }}</p>
+              <p><strong>Parent:</strong> {{ kid.parent?.firstName }} {{ kid.parent?.lastName }}</p>
+            </div>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-dialog-content>
+  <mat-dialog-actions>
+    <button class="btn btn-secondary" (click)="close()">Close</button>
+  </mat-dialog-actions>
+</div>

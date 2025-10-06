@@ -1,0 +1,61 @@
+<div class="container mt-4">
+      <h2>Fee Schedules</h2>
+      <div class="mb-3">
+        <h3>Create Fee Schedule</h3>
+        <form (ngSubmit)="createFeeSchedule()">
+          <div class="row">
+            <div class="col-md-3">
+              <input type="text" class="form-control" placeholder="Description" [(ngModel)]="feeSchedule.description" name="description" required>
+            </div>
+            <div class="col-md-3">
+              <input type="number" class="form-control" placeholder="Amount" [(ngModel)]="feeSchedule.amount" name="amount" required>
+            </div>
+            <div class="col-md-3">
+              <select class="form-control" [(ngModel)]="feeSchedule.type" name="type" required>
+                <option value="ONE_OFF">One-Off</option>
+                <option value="RECURRING">Recurring</option>
+              </select>
+            </div>
+            <div class="col-md-3" *ngIf="feeSchedule.type === 'RECURRING'">
+              <select class="form-control" [(ngModel)]="feeSchedule.recurrenceInterval" name="recurrenceInterval">
+                <option value="DAILY">Daily</option>
+                <option value="WEEKLY">Weekly</option>
+                <option value="MONTHLY">Monthly</option>
+                <option value="ANNUALLY">Annually</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mt-2" *ngIf="feeSchedule.type === 'RECURRING'">
+            <div class="col-md-3">
+              <input type="date" class="form-control" [(ngModel)]="feeSchedule.startDate" name="startDate">
+            </div>
+            <div class="col-md-3">
+              <input type="date" class="form-control" [(ngModel)]="feeSchedule.endDate" name="endDate">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary mt-2">Create Fee Schedule</button>
+        </form>
+      </div>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Type</th>
+            <th>Recurrence</th>
+            <th>Start Date</th>
+            <th>End Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let schedule of feeSchedules">
+            <td>{{ schedule.description }}</td>
+            <td>{{ schedule.amount | currency }}</td>
+            <td>{{ schedule.type }}</td>
+            <td>{{ schedule.recurrenceInterval || '-' }}</td>
+            <td>{{ schedule.startDate || '-' }}</td>
+            <td>{{ schedule.endDate || '-' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>

@@ -1,0 +1,53 @@
+<div class="container-fluid mt-4">
+  <h2>Kids Management</h2>
+  <div *ngIf="user?.role === 'ADMIN'" class="mb-3">
+    <h3>Add Kid</h3>
+    <form (ngSubmit)="addKid()">
+      <div class="row">
+        <div class="col-md-3">
+          <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="kidRequest.firstName" name="firstName" required>
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="kidRequest.lastName" name="lastName" required>
+        </div>
+        <div class="col-md-3">
+          <input type="date" class="form-control" [(ngModel)]="kidRequest.dateOfBirth" name="dateOfBirth" required>
+        </div>
+        <div class="col-md-3">
+          <input type="number" class="form-control" placeholder="Parent ID" [(ngModel)]="kidRequest.parentId" name="parentId" required>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary mt-2">Add Kid</button>
+    </form>
+  </div>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Code</th>
+        <th>Name</th>
+        <th>Date of Birth</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let kid of kids">
+        <td>{{ kid.code }}</td>
+        <td>{{ kid.firstName }} {{ kid.lastName }}</td>
+        <td>{{ kid.dateOfBirth }}</td>
+        <td>
+          <select *ngIf="user?.role === 'ADMIN'" [(ngModel)]="kid.status" (change)="updateStatus(kid)">
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <option value="SUSPENDED">Suspended</option>
+          </select>
+          <span *ngIf="user?.role !== 'ADMIN'">{{ kid.status }}</span>
+        </td>
+        <td>
+          <button class="btn btn-sm btn-primary me-2" (click)="openDetailsDialog(kid)">View Details</button>
+          <button class="btn btn-sm btn-danger" disabled>Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>

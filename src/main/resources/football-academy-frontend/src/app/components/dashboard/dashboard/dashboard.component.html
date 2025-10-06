@@ -1,0 +1,32 @@
+<div class="container-fluid">
+  <h2 class="mb-4">Welcome, {{ user?.firstName }}!</h2>
+  <div class="row">
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Manage Kids</h5>
+          <p class="card-text">View and manage player profiles.</p>
+          <a routerLink="/kids" class="btn btn-primary">Go to Kids</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Fee Invoices</h5>
+          <p class="card-text">Track and create invoices.</p>
+          <a routerLink="/fee-invoices" class="btn btn-primary">Go to Invoices</a>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card shadow-sm">
+        <div class="card-body text-center">
+          <h5 class="card-title">Progress Tracking</h5>
+          <p class="card-text">Monitor player performance.</p>
+          <a routerLink="/progress" class="btn btn-primary">Go to Progress</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
