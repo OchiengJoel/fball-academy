@@ -1,50 +1,98 @@
-<div class="container mt-4">
-      <h2>Users</h2>
-      <div class="mb-3">
-        <h3>Create User</h3>
-        <form (ngSubmit)="createUser()">
-          <div class="row">
-            <div class="col-md-2">
-              <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="user.firstName" name="firstName" required>
-            </div>
-            <div class="col-md-2">
-              <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="user.lastName" name="lastName" required>
-            </div>
-            <div class="col-md-3">
-              <input type="email" class="form-control" placeholder="Email" [(ngModel)]="user.email" name="email" required>
-            </div>
-            <div class="col-md-2">
-              <input type="text" class="form-control" placeholder="Phone Number" [(ngModel)]="user.phoneNumber" name="phoneNumber" required>
-            </div>
-            <div class="col-md-2">
-              <select class="form-control" [(ngModel)]="user.role" name="role" required>
-                <option value="SUPER_ADMIN">Super Admin</option>
-                <option value="ADMIN">Admin</option>
-                <option value="PARENT">Parent</option>
-              </select>
-            </div>
-            <div class="col-md-1">
-              <button type="submit" class="btn btn-primary">Create</button>
-            </div>
+<div class="container-fluid mt-4">
+  <h2>Users Management</h2>
+
+  <div class="mb-3">
+    <h3>Search Users</h3>
+    <form (ngSubmit)="loadUsers()">
+      <div class="row">
+        <div class="col-md-3">
+          <select class="form-control" [(ngModel)]="filterRole" name="role">
+            <option value="">All Roles</option>
+            <option value="SUPER_ADMIN">Super Admin</option>
+            <option value="ADMIN">Admin</option>
+            <option value="PARENT">Parent</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control" placeholder="Kid IDs (comma-separated)" [(ngModel)]="kidIds" name="kidIds">
+        </div>
+        <div class="col-md-3">
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" [(ngModel)]="searchByKids" name="searchByKids">
+            <label class="form-check-label">Search by Kid IDs</label>
           </div>
-        </form>
+        </div>
+        <div class="col-md-3">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
       </div>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Phone</th>
-            <th>Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let user of users">
-            <td>{{ user.firstName }} {{ user.lastName }}</td>
-            <td>{{ user.email }}</td>
-            <td>{{ user.phoneNumber }}</td>
-            <td>{{ user.role }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    </form>
+  </div>
+
+  <div class="mb-3">
+    <h3>Create User</h3>
+    <form (ngSubmit)="createUser()">
+      <div class="row">
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="user.firstName" name="firstName" required>
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="user.lastName" name="lastName" required>
+        </div>
+        <div class="col-md-3">
+          <input type="email" class="form-control" placeholder="Email" [(ngModel)]="user.email" name="email" required>
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="Phone Number" [(ngModel)]="user.phoneNumber" name="phoneNumber" required>
+        </div>
+        <div class="col-md-2">
+          <select class="form-control" [(ngModel)]="user.role" name="role" required>
+            <option value="SUPER_ADMIN">Super Admin</option>
+            <option value="ADMIN">Admin</option>
+            <option value="PARENT">Parent</option>
+          </select>
+        </div>
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="mb-3">
+    <button class="btn btn-primary me-2" (click)="exportUsers('pdf')">Export to PDF</button>
+    <button class="btn btn-primary" (click)="exportUsers('excel')">Export to Excel</button>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Phone</th>
+        <th>Role</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.userId }}</td>
+        <td>{{ user.firstName }} {{ user.lastName }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.phoneNumber }}</td>
+        <td>{{ user.role }}</td>
+        <td>
+          <button class="btn btn-sm btn-warning me-2" (click)="openEditDialog(user)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteUser(user.userId)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="d-flex justify-content-between">
+    <button class="btn btn-secondary" [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)">Previous</button>
+    <span>Page {{ currentPage + 1 }} of {{ page.totalPages }}</span>
+    <button class="btn btn-secondary" [disabled]="currentPage >= page.totalPages - 1" (click)="changePage(currentPage + 1)">Next</button>
+  </div>
+</div>

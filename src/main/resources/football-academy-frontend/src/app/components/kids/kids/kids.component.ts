@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Kid } from 'src/app/models/kid';
+import { Kid, KidBalance } from 'src/app/models/kid';
 import { KidRequest } from 'src/app/models/kid-request';
 import { User } from 'src/app/models/user';
 import { KidService } from 'src/app/services/kid.service';
@@ -17,12 +17,15 @@ export class KidsComponent {
   kids: Kid[] = [];
   kidRequest: KidRequest = { parentId: 0, firstName: '', lastName: '', dateOfBirth: '', feeScheduleIds: [] };
   user: User | null = null;
+  searchCriteria: { firstName?: string; lastName?: string; status?: string; parentName?: string } = {};
+  kidBalances: KidBalance[] = [];
+  outstandingCriteria: { parentId?: number; dueDateBefore?: string } = {};
 
   constructor(
     private kidService: KidService,
     private userService: UserService,
     private dialog: MatDialog
-  ) {}
+  ) { }
 
   ngOnInit() {
     this.userService.getUserByEmail(localStorage.getItem('email') || '').subscribe({
@@ -34,10 +37,33 @@ export class KidsComponent {
     });
   }
 
+  // loadKids() {
+  //   this.kidService.getKidsByParent(this.user!.userId).subscribe({
+  //     next: (kids) => (this.kids = kids),
+  //     error: (err) => alert('Failed to load kids: ' + (err.error || 'Unknown error'))
+  //   });
+  // }
+
+
   loadKids() {
-    this.kidService.getKidsByParent(this.user!.userId).subscribe({
+    if (this.user?.role === 'ADMIN' || this.user?.role === 'SUPER_ADMIN') {
+      this.kidService.getAllKids().subscribe({
+        next: (kids) => (this.kids = kids),
+        error: (err) => alert('Failed to load kids: ' + (err.error || 'Unknown error'))
+      });
+    } else {
+      this.kidService.getKidsByParent(this.user!.userId).subscribe({
+        next: (kids) => (this.kids = kids),
+        error: (err) => alert('Failed to load kids: ' + (err.error || 'Unknown error'))
+      });
+    }
+  }
+
+
+  searchKids() {
+    this.kidService.searchKids(this.searchCriteria).subscribe({
       next: (kids) => (this.kids = kids),
-      error: (err) => alert('Failed to load kids: ' + (err.error || 'Unknown error'))
+      error: (err) => alert('Failed to search kids: ' + (err.error || 'Unknown error'))
     });
   }
 
@@ -64,5 +90,18 @@ export class KidsComponent {
       data: { kid }
     });
   }
+
+  openEditDialog(_t91: Kid) {
+    throw new Error('Method not implemented.');
+  }
+
+  loadOutstandingBalances() {
+    this.kidService.getKidsWithOutstandingBalances(this.outstandingCriteria).subscribe({
+      next: (kidBalances) => (this.kidBalances = kidBalances),
+      error: (err) => alert('Failed to load outstanding balances: ' + (err.error || 'Unknown error'))
+    });
+  }
+
+
 
 }

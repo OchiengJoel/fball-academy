@@ -12,3 +12,8 @@ export interface Kid {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface KidBalance {
+    kid: Kid;
+    outstandingBalance: number;
+}

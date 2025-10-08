@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { KidRequest } from '../models/kid-request';
-import { Kid } from '../models/kid';
+import { Kid, KidBalance } from '../models/kid';
 
 @Injectable({
   providedIn: 'root'
@@ -17,9 +17,29 @@ export class KidService {
     return this.http.post<Kid>(this.apiUrl, kidRequest);
   }
 
+  updateKid(kidId: number, kidRequest: KidRequest): Observable<Kid> {
+    return this.http.put<Kid>(`${this.apiUrl}/${kidId}`, kidRequest);
+  }
+
   // getKidsByParent(parentId: number, status?: string): Observable<Kid[]> {
   //   return this.http.get<Kid[]>(`${this.apiUrl}/parent/${parentId}`, { params: { status } });
   // }
+
+  getAllKids(status?: string): Observable<Kid[]> {
+    const params: { [key: string]: string } = {};
+    if (status) {
+      params['status'] = status;
+    }
+    return this.http.get<Kid[]>(this.apiUrl, { params });
+  }
+
+  getKidById(kidId: number): Observable<Kid> {
+    return this.http.get<Kid>(`${this.apiUrl}/${kidId}`);
+  }
+
+  getKidByCode(code: string): Observable<Kid> {
+    return this.http.get<Kid>(`${this.apiUrl}/code/${code}`);
+  }
 
   getKidsByParent(parentId: number, status?: string): Observable<Kid[]> {
     const params: { [key: string]: string } = {};
@@ -29,7 +49,24 @@ export class KidService {
     return this.http.get<Kid[]>(`${this.apiUrl}/parent/${parentId}`, { params });
   }
 
+  searchKids(criteria: { firstName?: string; lastName?: string; status?: string; parentName?: string }): Observable<Kid[]> {
+    return this.http.get<Kid[]>(`${this.apiUrl}/search`, { params: criteria });
+  }
+
   updateKidStatus(kidId: number, status: string): Observable<Kid> {
     return this.http.put<Kid>(`${this.apiUrl}/${kidId}/status`, { status });
   }
+
+  deleteKid(kidId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${kidId}`);
+  }
+
+  updateFeeSchedules(kidId: number, feeScheduleIds: number[]): Observable<Kid> {
+    return this.http.put<Kid>(`${this.apiUrl}/${kidId}/fee-schedules`, feeScheduleIds);
+  }
+
+  getKidsWithOutstandingBalances(criteria: { parentId?: number; dueDateBefore?: string }): Observable<KidBalance[]> {
+    return this.http.get<KidBalance[]>(`${this.apiUrl}/outstanding`, { params: criteria });
+  }
+
 }

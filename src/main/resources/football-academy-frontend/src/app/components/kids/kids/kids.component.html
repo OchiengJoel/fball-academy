@@ -1,25 +1,64 @@
 <div class="container-fluid mt-4">
   <h2>Kids Management</h2>
-  <div *ngIf="user?.role === 'ADMIN'" class="mb-3">
+
+  <div class="mb-3" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'">
+    <h3>Search Kids</h3>
+    <form (ngSubmit)="searchKids()">
+      <div class="row">
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="searchCriteria.firstName"
+            name="firstName">
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="searchCriteria.lastName"
+            name="lastName">
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control" placeholder="Parent Name" [(ngModel)]="searchCriteria.parentName"
+            name="parentName">
+        </div>
+        <div class="col-md-3">
+          <select class="form-control" [(ngModel)]="searchCriteria.status" name="status" placeholder="Status">
+            <option value="">All Statuses</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+            <option value="SUSPENDED">Suspended</option>
+          </select>
+        </div>
+
+        <div class="col-md-1">
+          <button type="submit" class="btn btn-primary">Search</button>
+        </div>
+      </div>
+
+
+    </form>
+  </div>
+
+  <div *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" class="mb-3">
     <h3>Add Kid</h3>
     <form (ngSubmit)="addKid()">
       <div class="row">
         <div class="col-md-3">
-          <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="kidRequest.firstName" name="firstName" required>
+          <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="kidRequest.firstName"
+            name="firstName" required>
         </div>
         <div class="col-md-3">
-          <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="kidRequest.lastName" name="lastName" required>
+          <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="kidRequest.lastName"
+            name="lastName" required>
         </div>
         <div class="col-md-3">
           <input type="date" class="form-control" [(ngModel)]="kidRequest.dateOfBirth" name="dateOfBirth" required>
         </div>
         <div class="col-md-3">
-          <input type="number" class="form-control" placeholder="Parent ID" [(ngModel)]="kidRequest.parentId" name="parentId" required>
+          <input type="number" class="form-control" placeholder="Parent ID" [(ngModel)]="kidRequest.parentId"
+            name="parentId" required>
         </div>
       </div>
       <button type="submit" class="btn btn-primary mt-2">Add Kid</button>
     </form>
   </div>
+
   <table class="table table-striped">
     <thead>
       <tr>
@@ -36,18 +75,56 @@
         <td>{{ kid.firstName }} {{ kid.lastName }}</td>
         <td>{{ kid.dateOfBirth }}</td>
         <td>
-          <select *ngIf="user?.role === 'ADMIN'" [(ngModel)]="kid.status" (change)="updateStatus(kid)">
+          <select *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" [(ngModel)]="kid.status" (change)="updateStatus(kid)">
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
             <option value="SUSPENDED">Suspended</option>
           </select>
-          <span *ngIf="user?.role !== 'ADMIN'">{{ kid.status }}</span>
+          <span *ngIf="user?.role !== 'ADMIN' || user?.role === 'SUPER_ADMIN'">{{ kid.status }}</span>
         </td>
         <td>
+          <button class="btn btn-sm btn-warning me-2" *ngIf="user?.role === 'ADMIN'"
+            (click)="openEditDialog(kid)">Edit</button>
           <button class="btn btn-sm btn-primary me-2" (click)="openDetailsDialog(kid)">View Details</button>
           <button class="btn btn-sm btn-danger" disabled>Delete</button>
         </td>
       </tr>
     </tbody>
   </table>
+
+
+  <div class="mb-3" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'">
+    <h3>Kids with Outstanding Balances</h3>
+    <form (ngSubmit)="loadOutstandingBalances()">
+      <div class="row">
+        <div class="col-md-6">
+          <input type="number" class="form-control" placeholder="Parent ID (optional)"
+            [(ngModel)]="outstandingCriteria.parentId" name="parentId">
+        </div>
+        <div class="col-md-6">
+          <input type="date" class="form-control" placeholder="Due Date Before (optional)"
+            [(ngModel)]="outstandingCriteria.dueDateBefore" name="dueDateBefore">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary mt-2">Load Outstanding Balances</button>
+    </form>
+    <table *ngIf="kidBalances.length > 0" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Name</th>
+          <th>Parent</th>
+          <th>Outstanding Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let kb of kidBalances">
+          <td>{{ kb.kid.code }}</td>
+          <td>{{ kb.kid.firstName }} {{ kb.kid.lastName }}</td>
+          <td>{{ kb.kid.parent.firstName }} {{ kb.kid.parent.lastName }}</td>
+          <td>{{ kb.outstandingBalance | currency }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

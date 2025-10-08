@@ -97,6 +97,15 @@
             </tbody>
           </table>
         </div>
+
+        <div class="p-3" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'">
+          <h4>Assign Fee Schedules</h4>
+          <select multiple class="form-control" [(ngModel)]="selectedFeeScheduleIds" name="feeScheduleIds">
+            <option *ngFor="let schedule of feeSchedules" [value]="schedule.feeScheduleId">{{ schedule.description }}
+            </option>
+          </select>
+          <button class="btn btn-primary mt-2" (click)="updateFeeSchedules()">Update Fee Schedules</button>
+        </div>
       </mat-tab>
 
       <!-- Profile Summary Tab -->
@@ -111,7 +120,7 @@
               <p><strong>Date of Birth:</strong> {{ kid.dateOfBirth }}</p>
               <p><strong>Enrollment Date:</strong> {{ kid.enrollmentDate }}</p>
               <p><strong>Status:</strong> {{ kid.status }}</p>
-              <p><strong>Parent:</strong> {{ kid.parent?.firstName }} {{ kid.parent?.lastName }}</p>
+              <p><strong>Parent:</strong> {{ kid.parent ? (kid.parent.firstName + ' ' + kid.parent.lastName) : 'Unknown' }}</p>
             </div>
           </div>
         </div>
