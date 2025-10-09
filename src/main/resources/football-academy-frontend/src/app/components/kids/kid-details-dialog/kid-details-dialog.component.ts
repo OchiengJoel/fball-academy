@@ -24,7 +24,6 @@ export class KidDetailsDialogComponent implements OnInit {
   statementPeriodStart: string = '';
   statementPeriodEnd: string = '';
   includeDetails: boolean = false;
-
   selectedFeeScheduleIds: number[] = [];
 
   constructor(
@@ -38,20 +37,13 @@ export class KidDetailsDialogComponent implements OnInit {
     this.kid = data.kid;
   }
 
-  // ngOnInit() {
-  //   this.feeScheduleService.getAllFeeSchedules().subscribe({
-  //     next: (schedules) => (this.feeSchedules = schedules),
-  //     error: (err) => alert('Failed to load fee schedules: ' + (err.error || 'Unknown error'))
-  //   });
-  // }
-
- ngOnInit() {
+  ngOnInit() {
     this.userService.getUserByEmail(localStorage.getItem('email') || '').subscribe({
       next: (user) => {
         this.user = user;
         this.loadFeeSchedules();
       },
-      error: (err: HttpErrorResponse) => alert('Failed to load user: ' + (err.error || 'Unknown error'))
+      error: (err) => alert('Failed to load user: ' + (err.error || 'Unknown error'))
     });
   }
 
@@ -132,5 +124,4 @@ export class KidDetailsDialogComponent implements OnInit {
   close() {
     this.dialogRef.close();
   }
-
 }

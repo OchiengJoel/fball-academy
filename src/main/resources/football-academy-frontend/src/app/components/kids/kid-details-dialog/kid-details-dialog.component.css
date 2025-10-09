@@ -1,12 +1,36 @@
+/* Ensure consistency with UsersComponent styling */
 .dialog-container {
-  min-width: 600px;
+  padding: 20px;
 }
 
-.card {
-  border: none;
+.mat-dialog-content {
+  max-height: 70vh !important;
+  overflow-y: auto;
+}
+
+.table {
+  background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
-.card-title {
-  color: #007bff;
+.form-control {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  padding: 0.75rem;
+  font-size: 0.95rem;
+}
+
+.form-control.is-invalid {
+  border-color: #dc3545;
+}
+
+.invalid-feedback {
+  display: none;
+  color: #dc3545;
+  font-size: 0.85rem;
+}
+
+.is-invalid ~ .invalid-feedback {
+  display: block;
 }
