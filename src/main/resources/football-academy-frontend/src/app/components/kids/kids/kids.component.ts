@@ -1,15 +1,19 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Inject, OnInit } from '@angular/core';
 import { Kid, KidBalance } from 'src/app/models/kid';
 import { KidRequest } from 'src/app/models/kid-request';
 import { User } from 'src/app/models/user';
 import { KidService } from 'src/app/services/kid.service';
 import { UserService } from 'src/app/services/user.service';
 import { KidDetailsDialogComponent } from '../kid-details-dialog/kid-details-dialog.component';
-import { MatDialog } from '@angular/material/dialog';
+import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { FeeSchedule } from 'src/app/models/fee-schedule';
 import { FeeScheduleService } from 'src/app/services/fee-schedule.service';
 import { KidEditDialogComponent } from '../kid-edit-dialog/kid-edit-dialog.component';
+import { FeeInvoice } from 'src/app/models/fee-invoice';
+import { BillingSchedule } from 'src/app/models/billing-schedule';
+import { FeeInvoiceService } from 'src/app/services/fee-invoice.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   selector: 'app-kids',
@@ -27,12 +31,18 @@ export class KidsComponent implements OnInit {
   feeSchedules: FeeSchedule[] = [];
   parents: User[] = [];
   recurrenceIntervals = ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY'];
+  feeInvoices: FeeInvoice[] = [];
+  billingSchedules: BillingSchedule[] = [];
+  recentInvoices: FeeInvoice[] = []; // New property for recent invoices
+  recentSchedules: BillingSchedule[] = []; // New property for recent schedules
 
   constructor(
     private kidService: KidService,
     private userService: UserService,
     private feeScheduleService: FeeScheduleService,
     private dialog: MatDialog,
+    private feeInvoiceService: FeeInvoiceService,
+    private http: HttpClient,
     private fb: FormBuilder
   ) {
     this.addKidForm = this.fb.group({
@@ -83,7 +93,8 @@ export class KidsComponent implements OnInit {
       isOneOff: [false],
       isRecurring: [false],
       recurrenceInterval: [''],
-      prorate: [false]
+      prorate: [false],
+      dueDate: [''] // Field for one-off due date
     });
 
     feeDetailForm.get('isOneOff')?.valueChanges.subscribe(value => {
@@ -170,6 +181,13 @@ export class KidsComponent implements OnInit {
     });
   }
 
+  loadFeeSchedules() {
+    this.feeScheduleService.getActiveFeeSchedules(new Date().toISOString().split('T')[0]).subscribe({
+      next: (schedules) => (this.feeSchedules = schedules),
+      error: (err) => alert('Failed to load fee schedules: ' + (err.error || 'Unknown error'))
+    });
+  }
+
   searchKids() {
     if (this.isAdminOrSuperAdmin()) {
       this.kidService.searchKids(this.searchForm.value).subscribe({
@@ -196,15 +214,30 @@ export class KidsComponent implements OnInit {
         amount: detail.amount,
         chargeType: detail.chargeType,
         recurrenceInterval: detail.recurrenceInterval,
-        prorate: detail.prorate
+        prorate: detail.prorate,
+        dueDate: detail.dueDate // Include dueDate for one-off charges
       }))
     };
 
     this.kidService.addKid(kidRequest).subscribe({
-      next: () => {
+      next: (kid) => {
         this.loadKids();
         this.addKidForm.reset();
         this.feeDetails.clear();
+        // Fetch and display invoices and schedules
+        this.feeInvoiceService.getInvoicesForKid(kid.kidId, '2000-01-01', '2100-12-31').subscribe({
+          next: (invoices) => {
+            this.recentInvoices = invoices;
+            this.http.get<BillingSchedule[]>(`http://localhost:8082/api/billing-schedules/kid/${kid.kidId}`).subscribe({
+              next: (schedules) => {
+                this.recentSchedules = schedules;
+                alert(`Kid added successfully! Generated ${invoices.length} invoices and ${schedules.length} billing schedules.`);
+              },
+              error: (err) => alert('Failed to load billing schedules: ' + (err.error || 'Unknown error'))
+            });
+          },
+          error: (err) => alert('Failed to load invoices: ' + (err.error || 'Unknown error'))
+        });
       },
       error: (err) => alert('Failed to add kid: ' + (err.error || 'Unknown error'))
     });
@@ -260,12 +293,5 @@ export class KidsComponent implements OnInit {
         error: (err) => alert('Failed to load outstanding balances: ' + (err.error || 'Unknown error'))
       });
     }
-  }
-
-  loadFeeSchedules() {
-    this.feeScheduleService.getActiveFeeSchedules(new Date().toISOString().split('T')[0]).subscribe({
-      next: (schedules) => (this.feeSchedules = schedules),
-      error: (err) => alert('Failed to load fee schedules: ' + (err.error || 'Unknown error'))
-    });
   }
 }

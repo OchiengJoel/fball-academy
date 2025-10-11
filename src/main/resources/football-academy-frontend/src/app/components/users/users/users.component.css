@@ -1,3 +1,5 @@
+/* User component css styles */
+
 /* Headings */
 h2, h3 {
   color: #1a3c34;
@@ -19,6 +21,10 @@ h3 {
 .table {
   background-color: white;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  border-collapse: separate;
+  border-spacing: 0;
 }
 
 .btn-primary, .btn-warning, .btn-danger {
@@ -45,17 +51,21 @@ form {
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-
-/* Table styling */
-.table {
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  border-collapse: separate;
-  border-spacing: 0;
+.form-control.is-invalid {
+  border-color: #dc3545;
 }
 
+.invalid-feedback {
+  display: none;
+  color: #dc3545;
+  font-size: 0.85rem;
+}
+
+.is-invalid ~ .invalid-feedback {
+  display: block;
+}
+
+/* Table styling */
 .table th {
   background-color: #f3f4f6;
   color: #1a3c34;
@@ -79,7 +89,6 @@ form {
   background-color: #f1f5f9;
   transition: background-color 0.2s ease;
 }
-
 
 /* Accessibility improvements */
 :focus-visible {
@@ -108,4 +117,12 @@ input:focus-visible {
 
 .table tbody tr {
   animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Center dialog globally */
+.custom-dialog-container .mat-dialog-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
 }

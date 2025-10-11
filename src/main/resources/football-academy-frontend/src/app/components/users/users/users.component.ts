@@ -4,26 +4,18 @@ import { Page } from 'src/app/models/page';
 import { User } from 'src/app/models/user';
 import { UserService } from 'src/app/services/user.service';
 import { UserEditDialogComponent } from '../user-edit-dialog/user-edit-dialog.component';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 @Component({
   selector: 'app-users',
   templateUrl: './users.component.html',
   styleUrls: ['./users.component.css']
 })
-export class UsersComponent implements OnInit{
+export class UsersComponent implements OnInit {
 
   users: User[] = [];
-  user: User = {
-    userId: 0,
-    firstName: '',
-    lastName: '',
-    email: '',
-    phoneNumber: '',
-    role: 'PARENT',
-    createdAt: '',
-    updatedAt: '',
-  };
-
+  createUserForm: FormGroup;
+  searchUsersForm: FormGroup;
   page: Page<User> = {
     content: [],
     totalPages: 0,
@@ -32,30 +24,39 @@ export class UsersComponent implements OnInit{
   };
   currentPage: number = 0;
   pageSize: number = 10;
-  filterRole: string = '';
-  kidIds: string = '';
-  searchByKids: boolean = false;
-  
+
   constructor(
     private userService: UserService,
-    private  dialog: MatDialog
-  ) {}
+    private dialog: MatDialog,
+    private fb: FormBuilder
+  ) {
+    this.createUserForm = this.fb.group({
+      firstName: ['', [Validators.required]],
+      lastName: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
+      phoneNumber: ['', [Validators.required, Validators.pattern(/^\+?\d{10,15}$/)]],
+      role: ['PARENT', [Validators.required]],
+      password: [''] 
+      // password: ['', [Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)]]
+    });
 
-  // ngOnInit() {
-  //   // Fetch users (requires an endpoint to list all users; not implemented in backend)
-  //   this.userService.getUserByEmail(localStorage.getItem('email') || '').subscribe({
-  //     next: (user) => (this.users = [user]), // Placeholder
-  //   });
-  // }
+    this.searchUsersForm = this.fb.group({
+      filterRole: [''],
+      kidIds: [''],
+      searchByKids: [false]
+    });
+  }
 
   ngOnInit() {
     this.loadUsers();
   }
 
   loadUsers(page: number = 0) {
-    if (this.searchByKids && this.kidIds) {
-      const kidIds = this.kidIds.split(',').map(id => parseInt(id.trim())).filter(id => !isNaN(id));
-      this.userService.getUsersByKids(kidIds).subscribe({
+    const { filterRole, kidIds, searchByKids } = this.searchUsersForm.value;
+
+    if (searchByKids && kidIds) {
+      const kidIdArray = kidIds.split(',').map((id: string) => parseInt(id.trim())).filter((id: number) => !isNaN(id));
+      this.userService.getUsersByKids(kidIdArray).subscribe({
         next: (users) => {
           this.users = users;
           this.page = {
@@ -67,8 +68,8 @@ export class UsersComponent implements OnInit{
         },
         error: (err) => alert('Failed to load users by kids: ' + (err.error || 'Unknown error'))
       });
-    } else if (this.filterRole) {
-      this.userService.getUsersByRole(this.filterRole, page, this.pageSize).subscribe({
+    } else if (filterRole) {
+      this.userService.getUsersByRole(filterRole, page, this.pageSize).subscribe({
         next: (page) => {
           this.page = page;
           this.users = page.content;
@@ -88,18 +89,29 @@ export class UsersComponent implements OnInit{
     }
   }
 
-  // createUser() {
-  //   this.userService.createUser(this.user, true).subscribe({
-  //     next: (newUser) => (this.users.push(newUser)),
-  //   });
-  // }
-
   createUser() {
-    this.userService.createUser(this.user, true).subscribe({
-      next: (newUser) => {
-        this.users.push(newUser);
+    if (this.createUserForm.invalid) {
+      this.createUserForm.markAllAsTouched();
+      return;
+    }
+
+    const user: User = {
+      userId: 0,
+      firstName: this.createUserForm.value.firstName,
+      lastName: this.createUserForm.value.lastName,
+      email: this.createUserForm.value.email,
+      phoneNumber: this.createUserForm.value.phoneNumber,
+      role: this.createUserForm.value.role,
+      createdAt: '',
+      updatedAt: ''
+    };
+
+    const customPassword = this.createUserForm.value.password || undefined;
+
+    this.userService.createUser(user, true, customPassword).subscribe({
+      next: () => {
         this.loadUsers(this.currentPage);
-        this.user = { userId: 0, firstName: '', lastName: '', email: '', phoneNumber: '', role: 'PARENT', createdAt: '', updatedAt: '' };
+        this.createUserForm.reset({ role: 'PARENT', password: '' });
       },
       error: (err) => alert('Failed to create user: ' + (err.error || 'Unknown error'))
     });
@@ -107,7 +119,9 @@ export class UsersComponent implements OnInit{
 
   openEditDialog(user: User) {
     const dialogRef = this.dialog.open(UserEditDialogComponent, {
-      width: '500px',
+      width: '900px',
+      maxWidth: '90vw',
+      panelClass: 'custom-dialog-container', // Custom class for centering
       data: { user: { ...user } }
     });
     dialogRef.afterClosed().subscribe(result => {
@@ -133,7 +147,8 @@ export class UsersComponent implements OnInit{
   }
 
   exportUsers(format: 'pdf' | 'excel') {
-    this.userService.exportUsers(format, this.filterRole || undefined).subscribe({
+    const { filterRole } = this.searchUsersForm.value;
+    this.userService.exportUsers(format, filterRole || undefined).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -144,6 +159,10 @@ export class UsersComponent implements OnInit{
       },
       error: (err) => alert('Failed to export users: ' + (err.error || 'Unknown error'))
     });
+  }
 
+  isValidPassword(password: string): boolean {
+  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+  return !password || passwordPattern.test(password);
 }
 }

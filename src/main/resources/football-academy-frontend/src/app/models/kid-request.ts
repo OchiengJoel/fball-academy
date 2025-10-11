@@ -3,5 +3,16 @@ export interface KidRequest {
   firstName: string;
   lastName: string;
   dateOfBirth: string;
-  feeScheduleIds: number[];
+  enrollmentDate: string;
+  feeDetails: FeeDetail[];
+}
+
+
+export interface FeeDetail {
+    feeScheduleId: number;
+    amount: number;
+    chargeType: 'ONE_OFF' | 'RECURRING';
+    recurrenceInterval?: string;
+    prorate: boolean;
+    dueDate?: string; // New field for one-off due date
 }

@@ -1,33 +1,48 @@
 <h2 mat-dialog-title>Edit User</h2>
-    <mat-dialog-content>
-      <form>
-        <div class="row">
-          <div class="col-md-6 mb-3">
-            <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="data.user.firstName" name="firstName" required>
-          </div>
-          <div class="col-md-6 mb-3">
-            <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="data.user.lastName" name="lastName" required>
-          </div>
-          <div class="col-md-6 mb-3">
-            <input type="email" class="form-control" placeholder="Email" [(ngModel)]="data.user.email" name="email" required>
-          </div>
-          <div class="col-md-6 mb-3">
-            <input type="text" class="form-control" placeholder="Phone Number" [(ngModel)]="data.user.phoneNumber" name="phoneNumber" required>
-          </div>
-          <div class="col-md-6 mb-3">
-            <select class="form-control" [(ngModel)]="data.user.role" name="role" required>
-              <option value="SUPER_ADMIN">Super Admin</option>
-              <option value="ADMIN">Admin</option>
-              <option value="PARENT">Parent</option>
-            </select>
-          </div>
-          <div class="col-md-6 mb-3">
-            <input type="password" class="form-control" placeholder="New Password (optional)" [(ngModel)]="customPassword" name="customPassword">
-          </div>
-        </div>
-      </form>
-    </mat-dialog-content>
-    <mat-dialog-actions>
-      <button class="btn btn-primary" (click)="save()">Save</button>
-      <button class="btn btn-secondary" (click)="close()">Cancel</button>
-    </mat-dialog-actions>
+<mat-dialog-content>
+  <form [formGroup]="editUserForm">
+    <div class="row">
+      <div class="col-md-6 mb-3">
+        <input type="text" class="form-control" placeholder="First Name" formControlName="firstName"
+          [ngClass]="{'is-invalid': editUserForm.get('firstName')?.touched && editUserForm.get('firstName')?.invalid}">
+        <div class="invalid-feedback">First Name is required</div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <input type="text" class="form-control" placeholder="Last Name" formControlName="lastName"
+          [ngClass]="{'is-invalid': editUserForm.get('lastName')?.touched && editUserForm.get('lastName')?.invalid}">
+        <div class="invalid-feedback">Last Name is required</div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <input type="email" class="form-control" placeholder="Email" formControlName="email"
+          [ngClass]="{'is-invalid': editUserForm.get('email')?.touched && editUserForm.get('email')?.invalid}">
+        <div class="invalid-feedback">Valid email is required</div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <input type="text" class="form-control" placeholder="Phone Number" formControlName="phoneNumber"
+          [ngClass]="{'is-invalid': editUserForm.get('phoneNumber')?.touched && editUserForm.get('phoneNumber')?.invalid}">
+        <div class="invalid-feedback">Valid phone number is required</div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <select class="form-control" formControlName="role"
+          [ngClass]="{'is-invalid': editUserForm.get('role')?.touched && editUserForm.get('role')?.invalid}">
+          <option value="SUPER_ADMIN">Super Admin</option>
+          <option value="ADMIN">Admin</option>
+          <option value="PARENT">Parent</option>
+        </select>
+        <div class="invalid-feedback">Role is required</div>
+      </div>
+      <div class="col-md-6 mb-3">
+        <input type="password" class="form-control" placeholder="New Password (optional)"
+          formControlName="customPassword"
+          [ngClass]="{'is-invalid': editUserForm.get('customPassword')?.touched && editUserForm.get('customPassword')?.value && !isValidPassword(editUserForm.get('customPassword')?.value)}">
+        <div class="invalid-feedback">Password must be at least 8 characters, include uppercase, lowercase, number, and
+          special character</div>
+      </div>
+    </div>
+  </form>
+</mat-dialog-content>
+<mat-dialog-actions>
+  <button class="btn btn-primary" (click)="save()"
+    [disabled]="editUserForm.invalid && editUserForm.touched">Save</button>
+  <button class="btn btn-secondary" (click)="close()">Cancel</button>
+</mat-dialog-actions>

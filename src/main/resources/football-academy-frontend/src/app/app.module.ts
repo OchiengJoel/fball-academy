@@ -29,6 +29,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
 import { KidDetailsDialogComponent } from './components/kids/kid-details-dialog/kid-details-dialog.component';
 import { UserEditDialogComponent } from './components/users/user-edit-dialog/user-edit-dialog.component';
+import { KidEditDialogComponent } from './components/kids/kid-edit-dialog/kid-edit-dialog.component';
 
 @NgModule({
   declarations: [
@@ -47,6 +48,7 @@ import { UserEditDialogComponent } from './components/users/user-edit-dialog/use
     SidebarComponent,
     KidDetailsDialogComponent,
     UserEditDialogComponent,
+    KidEditDialogComponent,
     
   ],
   imports: [

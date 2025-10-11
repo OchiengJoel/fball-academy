@@ -43,6 +43,10 @@ export class UserService {
     });
   }
 
+  getParentUsers(): Observable<User[]> {
+    return this.http.get<User[]>(`${this.apiUrl}/parents`);
+  }
+
   getUsersByRole(role: string, page: number = 0, size: number = 10): Observable<Page<User>> {
     return this.http.get<Page<User>>(`${this.apiUrl}/role/${role}`, {
       params: { page: page.toString(), size: size.toString() }

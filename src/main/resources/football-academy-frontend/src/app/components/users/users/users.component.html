@@ -3,10 +3,10 @@
 
   <div class="mb-3">
     <h3>Search Users</h3>
-    <form (ngSubmit)="loadUsers()">
+    <form [formGroup]="searchUsersForm" (ngSubmit)="loadUsers()">
       <div class="row">
         <div class="col-md-3">
-          <select class="form-control" [(ngModel)]="filterRole" name="role">
+          <select class="form-control" formControlName="filterRole">
             <option value="">All Roles</option>
             <option value="SUPER_ADMIN">Super Admin</option>
             <option value="ADMIN">Admin</option>
@@ -14,16 +14,16 @@
           </select>
         </div>
         <div class="col-md-3">
-          <input type="text" class="form-control" placeholder="Kid IDs (comma-separated)" [(ngModel)]="kidIds" name="kidIds">
+          <input type="text" class="form-control" placeholder="Kid IDs (comma-separated)" formControlName="kidIds">
         </div>
         <div class="col-md-3">
           <div class="form-check">
-            <input type="checkbox" class="form-check-input" [(ngModel)]="searchByKids" name="searchByKids">
+            <input type="checkbox" class="form-check-input" formControlName="searchByKids">
             <label class="form-check-label">Search by Kid IDs</label>
           </div>
         </div>
         <div class="col-md-3">
-          <button type="submit" class="btn btn-primary">Search</button>
+          <button type="submit" class="btn btn-primary" [disabled]="searchUsersForm.invalid">Search</button>
         </div>
       </div>
     </form>
@@ -31,29 +31,58 @@
 
   <div class="mb-3">
     <h3>Create User</h3>
-    <form (ngSubmit)="createUser()">
+    <form [formGroup]="createUserForm" (ngSubmit)="createUser()">
       <div class="row">
         <div class="col-md-2">
-          <input type="text" class="form-control" placeholder="First Name" [(ngModel)]="user.firstName" name="firstName" required>
+          <input type="text" class="form-control" placeholder="First Name" formControlName="firstName"
+            [ngClass]="{'is-invalid': createUserForm.get('firstName')?.touched && createUserForm.get('firstName')?.invalid}">
+          <div class="invalid-feedback">First Name is required</div>
         </div>
         <div class="col-md-2">
-          <input type="text" class="form-control" placeholder="Last Name" [(ngModel)]="user.lastName" name="lastName" required>
-        </div>
-        <div class="col-md-3">
-          <input type="email" class="form-control" placeholder="Email" [(ngModel)]="user.email" name="email" required>
-        </div>
-        <div class="col-md-2">
-          <input type="text" class="form-control" placeholder="Phone Number" [(ngModel)]="user.phoneNumber" name="phoneNumber" required>
+          <input type="text" class="form-control" placeholder="Last Name" formControlName="lastName"
+            [ngClass]="{'is-invalid': createUserForm.get('lastName')?.touched && createUserForm.get('lastName')?.invalid}">
+          <div class="invalid-feedback">Last Name is required</div>
         </div>
         <div class="col-md-2">
-          <select class="form-control" [(ngModel)]="user.role" name="role" required>
+          <input type="email" class="form-control" placeholder="Email" formControlName="email"
+            [ngClass]="{'is-invalid': createUserForm.get('email')?.touched && createUserForm.get('email')?.invalid}">
+          <div class="invalid-feedback">Valid email is required</div>
+        </div>
+        <div class="col-md-2">
+          <input type="text" class="form-control" placeholder="Phone Number" formControlName="phoneNumber"
+            [ngClass]="{'is-invalid': createUserForm.get('phoneNumber')?.touched && createUserForm.get('phoneNumber')?.invalid}">
+          <div class="invalid-feedback">Valid phone number is required</div>
+        </div>
+        <div class="col-md-2">
+          <select class="form-control" formControlName="role"
+            [ngClass]="{'is-invalid': createUserForm.get('role')?.touched && createUserForm.get('role')?.invalid}">
             <option value="SUPER_ADMIN">Super Admin</option>
             <option value="ADMIN">Admin</option>
             <option value="PARENT">Parent</option>
           </select>
+          <div class="invalid-feedback">Role is required</div>
         </div>
+        <!-- <div class="col-md-2">
+          <input
+            type="password"
+            class="form-control"
+            placeholder="Password (optional)"
+            formControlName="password"
+            [ngClass]="{'is-invalid': createUserForm.get('password')?.touched && createUserForm.get('password')?.invalid}"
+          >
+          <div class="invalid-feedback">Password must be at least 8 characters, include uppercase, lowercase, number, and special character</div>
+        </div> -->
+
+        <div class="col-md-2">
+          <input type="password" class="form-control" placeholder="Password (optional)" formControlName="password"
+            [ngClass]="{'is-invalid': createUserForm.get('password')?.touched && createUserForm.get('password')?.value && !isValidPassword(createUserForm.get('password')?.value)}">
+          <div class="invalid-feedback">Password must be at least 8 characters, include uppercase, lowercase, number,
+            and special character</div>
+        </div>
+
         <div class="col-md-1">
-          <button type="submit" class="btn btn-primary">Create</button>
+          <button type="submit" class="btn btn-primary"
+            [disabled]="createUserForm.invalid && createUserForm.touched">Create</button>
         </div>
       </div>
     </form>
@@ -91,8 +120,10 @@
   </table>
 
   <div class="d-flex justify-content-between">
-    <button class="btn btn-secondary" [disabled]="currentPage === 0" (click)="changePage(currentPage - 1)">Previous</button>
+    <button class="btn btn-secondary" [disabled]="currentPage === 0"
+      (click)="changePage(currentPage - 1)">Previous</button>
     <span>Page {{ currentPage + 1 }} of {{ page.totalPages }}</span>
-    <button class="btn btn-secondary" [disabled]="currentPage >= page.totalPages - 1" (click)="changePage(currentPage + 1)">Next</button>
+    <button class="btn btn-secondary" [disabled]="currentPage >= page.totalPages - 1"
+      (click)="changePage(currentPage + 1)">Next</button>
   </div>
 </div>

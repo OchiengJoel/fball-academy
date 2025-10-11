@@ -60,3 +60,30 @@ body {
   background-color: #007bff;
   color: #fff;
 }
+
+
+
+/* Center all Material dialogs */
+.cdk-overlay-pane.custom-dialog-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: auto;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Ensure dialog content is properly sized */
+.mat-dialog-content {
+  max-height: 70vh !important;
+  overflow-y: auto;
+}
+
+/* Ensure dialog container doesn’t overflow */
+.mat-dialog-container {
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
