@@ -27,6 +27,11 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatButtonModule } from '@angular/material/button';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { MatPaginatorModule } from '@angular/material/paginator';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { ToastrModule } from 'ngx-toastr';
 import { KidDetailsDialogComponent } from './components/kids/kid-details-dialog/kid-details-dialog.component';
 import { UserEditDialogComponent } from './components/users/user-edit-dialog/user-edit-dialog.component';
 import { KidEditDialogComponent } from './components/kids/kid-edit-dialog/kid-edit-dialog.component';
@@ -61,7 +66,16 @@ import { KidEditDialogComponent } from './components/kids/kid-edit-dialog/kid-ed
     MatTabsModule,
     MatButtonModule,
     MatSelectModule,
-    BrowserAnimationsModule
+    MatTableModule,
+    MatPaginatorModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    BrowserAnimationsModule,
+    ToastrModule.forRoot({
+      timeOut: 3000,
+      positionClass: 'toast-top-right',
+      preventDuplicates: true
+    })
     
     
   ],

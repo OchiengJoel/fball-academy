@@ -3,11 +3,13 @@ import { Kid } from "./kid";
 
 export interface BillingSchedule {
     billingScheduleId: number;
-    kid: Kid;
-    feeSchedule: FeeSchedule;
+    kidId: number;
+    kidName: string;
+    feeScheduleId: number;
+    feeScheduleDescription: string;
     amount: number;
-    recurrenceInterval: string;
     dueDate: string;
+    recurrenceInterval: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY';
     createdAt: string;
     updatedAt: string;
 }

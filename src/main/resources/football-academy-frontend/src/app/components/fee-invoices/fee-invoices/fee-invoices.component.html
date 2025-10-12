@@ -1,66 +1,171 @@
 <div class="container mt-4">
-      <h2>Fee Invoices</h2>
-      <div *ngIf="user?.role === 'ADMIN'" class="mb-3">
-        <h3>Create Invoice</h3>
-        <form (ngSubmit)="createInvoice()">
-          <div class="row">
-            <div class="col-md-3">
-              <select class="form-control" [(ngModel)]="invoice.kidId" name="kidId" required>
-                <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <select class="form-control" [(ngModel)]="invoice.feeScheduleId" name="feeScheduleId" required>
-                <option *ngFor="let schedule of feeSchedules" [value]="schedule.feeScheduleId">{{ schedule.description }}</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <input type="date" class="form-control" [(ngModel)]="invoice.dueDate" name="dueDate" required>
-            </div>
-            <div class="col-md-3">
-              <button type="submit" class="btn btn-primary">Create Invoice</button>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="mb-3">
-        <h3>Filter Invoices</h3>
+  <h2 class="mb-4">Fee Invoices</h2>
+  <div *ngIf="loading" class="alert alert-info">Loading...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
+
+  <!-- Create Invoice Form (Admin/Super Admin only) -->
+  <div *ngIf="isAdminOrSuperAdmin()" class="card mb-4">
+    <div class="card-header">
+      <h3 class="card-title">Create Invoice</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="invoiceForm" (ngSubmit)="createInvoice()">
         <div class="row">
-          <div class="col-md-3">
-            <select class="form-control" [(ngModel)]="selectedKidId" (change)="loadInvoices()">
+          <div class="col-md-3 mb-3">
+            <label for="kidId" class="form-label">Kid</label>
+            <select id="kidId" class="form-select" formControlName="kidId"
+              [ngClass]="{'is-invalid': invoiceForm.get('kidId')?.touched && invoiceForm.get('kidId')?.invalid}">
               <option value="">Select Kid</option>
               <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
             </select>
+            <div class="invalid-feedback">Please select a kid.</div>
           </div>
-          <div class="col-md-3">
-            <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadInvoices()">
+          <div class="col-md-3 mb-3">
+            <label for="feeScheduleId" class="form-label">Fee Schedule</label>
+            <select id="feeScheduleId" class="form-select" formControlName="feeScheduleId"
+              [ngClass]="{'is-invalid': invoiceForm.get('feeScheduleId')?.touched && invoiceForm.get('feeScheduleId')?.invalid}">
+              <option value="">Select Fee Schedule</option>
+              <option *ngFor="let schedule of feeSchedules" [value]="schedule.feeScheduleId">{{ schedule.description }}
+                ({{ schedule.amount | currency }})</option>
+            </select>
+            <div class="invalid-feedback">Please select a fee schedule.</div>
           </div>
-          <div class="col-md-3">
-            <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadInvoices()">
+          <div class="col-md-3 mb-3">
+            <label for="dueDate" class="form-label">Due Date</label>
+            <input id="dueDate" type="date" class="form-control" formControlName="dueDate"
+              [ngClass]="{'is-invalid': invoiceForm.get('dueDate')?.touched && invoiceForm.get('dueDate')?.invalid}">
+            <div class="invalid-feedback">Please select a valid due date (not in the past).</div>
+          </div>
+          <div class="col-md-3 mb-3 align-self-end">
+            <button type="submit" class="btn btn-primary w-100" [disabled]="invoiceForm.invalid || loading">Create
+              Invoice</button>
           </div>
         </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Filter Invoices Form -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3 class="card-title">Filter Invoices</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="filterForm" (ngSubmit)="loadInvoices()">
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label for="selectedKidId" class="form-label">Kid</label>
+            <select id="selectedKidId" class="form-select" formControlName="selectedKidId" (change)="loadInvoices()">
+              <option value="">All Kids</option>
+              <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+            </select>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="startDate" class="form-label">Start Date</label>
+            <input matInput [matDatepicker]="startPicker" id="startDate" class="form-control"
+              formControlName="startDate" (dateChange)="loadInvoices()">
+            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+            <mat-datepicker #startPicker></mat-datepicker>
+            <div *ngIf="filterForm.get('startDate')?.invalid && filterForm.get('startDate')?.touched"
+              class="text-danger">
+              Start date is required.
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="endDate" class="form-label">End Date</label>
+            <input id="endDate" type="date" class="form-control" formControlName="endDate" (change)="loadInvoices()">
+            <div *ngIf="filterForm.get('endDate')?.invalid && filterForm.get('endDate')?.touched" class="text-danger">
+              End date is required.
+            </div>
+          </div>
+          <div class="col-md-3 mb-3 align-self-end">
+            <button type="submit" class="btn btn-secondary w-100" [disabled]="filterForm.invalid || loading">Apply
+              Filters</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Invoices Table -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3 class="card-title">Invoices</h3>
+    </div>
+    <div class="card-body">
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z2">
+        <ng-container matColumnDef="invoiceId">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Invoice ID</th>
+          <td mat-cell *matCellDef="let invoice">{{ invoice.invoiceId }}</td>
+        </ng-container>
+        <ng-container matColumnDef="kidName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Kid</th>
+          <td mat-cell *matCellDef="let invoice">{{ invoice.kidName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="feeScheduleDescription">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fee Schedule</th>
+          <td mat-cell *matCellDef="let invoice">{{ invoice.feeScheduleDescription }}</td>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+          <td mat-cell *matCellDef="let invoice">{{ invoice.amount | currency }}</td>
+        </ng-container>
+        <ng-container matColumnDef="dueDate">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Due Date</th>
+          <td mat-cell *matCellDef="let invoice">{{ invoice.dueDate | date:'mediumDate' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+          <td mat-cell *matCellDef="let invoice">
+            <span [ngClass]="{
+              'badge bg-success': invoice.status === 'PAID',
+              'badge bg-warning': invoice.status === 'OPEN',
+              'badge bg-danger': invoice.status === 'OVERDUE'
+            }">
+              {{ invoice.status }}
+            </span>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+      <div *ngIf="dataSource.data.length === 0" class="alert alert-info mt-3">
+        No invoices found for the selected filters.
       </div>
-      <table class="table table-striped">
+    </div>
+  </div>
+
+  <!-- Outstanding Balance -->
+  <h3 *ngIf="filterForm.value.selectedKidId" class="mt-4">Outstanding Balance: {{ balance | currency }}</h3>
+
+  <!-- Kid Balances -->
+  <div *ngIf="user?.role === 'PARENT' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" class="card mt-4">
+    <div class="card-header">
+      <h3 class="card-title">Kid Balances</h3>
+    </div>
+    <div class="card-body">
+      <button class="btn btn-secondary mb-3" (click)="loadAllKidBalances()" [disabled]="filterForm.invalid || loading">
+        Load All Kid Balances
+      </button>
+      <table class="table table-striped table-hover" *ngIf="kidBalances.length > 0">
         <thead>
           <tr>
-            <th>Invoice ID</th>
-            <th>Kid</th>
-            <th>Fee Schedule</th>
-            <th>Amount</th>
-            <th>Due Date</th>
-            <th>Status</th>
+            <th scope="col">Kid</th>
+            <th scope="col">Outstanding Balance</th>
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let invoice of invoices">
-            <td>{{ invoice.invoiceId }}</td>
-            <td>{{ invoice.kid.firstName }} {{ invoice.kid.lastName }}</td>
-            <td>{{ invoice.feeSchedule.description }}</td>
-            <td>{{ invoice.amount | currency }}</td>
-            <td>{{ invoice.dueDate }}</td>
-            <td>{{ invoice.status }}</td>
+          <tr *ngFor="let balance of kidBalances">
+            <td>{{ balance.kidName }}</td>
+            <td>{{ balance.outstandingBalance | currency }}</td>
           </tr>
         </tbody>
       </table>
-      <h3 *ngIf="selectedKidId">Outstanding Balance: {{ balance | currency }}</h3>
+      <div *ngIf="kidBalances.length === 0 && filterForm.valid" class="alert alert-info">
+        No outstanding balances found for the selected period.
+      </div>
     </div>
+  </div>
+</div>

@@ -25,23 +25,23 @@ export class KidsComponent implements OnInit {
   kids: Kid[] = [];
   addKidForm: FormGroup;
   searchForm: FormGroup;
-  kidBalances: KidBalance[] = [];
   outstandingForm: FormGroup;
-  user: User | null = null;
+  kidBalances: KidBalance[] = [];
   feeSchedules: FeeSchedule[] = [];
   parents: User[] = [];
+  recentInvoices: FeeInvoice[] = [];
+  recentSchedules: BillingSchedule[] = [];
+  user: User | null = null;
   recurrenceIntervals = ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY'];
-  feeInvoices: FeeInvoice[] = [];
-  billingSchedules: BillingSchedule[] = [];
-  recentInvoices: FeeInvoice[] = []; // New property for recent invoices
-  recentSchedules: BillingSchedule[] = []; // New property for recent schedules
+  loading: boolean = false;
+  error: string | null = null;
 
   constructor(
     private kidService: KidService,
     private userService: UserService,
     private feeScheduleService: FeeScheduleService,
-    private dialog: MatDialog,
     private feeInvoiceService: FeeInvoiceService,
+    private dialog: MatDialog,
     private http: HttpClient,
     private fb: FormBuilder
   ) {
@@ -68,6 +68,7 @@ export class KidsComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.loading = true;
     this.userService.getUserByEmail(localStorage.getItem('email') || '').subscribe({
       next: (user) => {
         this.user = user;
@@ -76,8 +77,12 @@ export class KidsComponent implements OnInit {
           this.loadFeeSchedules();
           this.loadParents();
         }
+        this.loading = false;
       },
-      error: (err) => alert('Failed to load user: ' + (err.error || 'Unknown error'))
+      error: (err) => {
+        this.error = 'Failed to load user: ' + (err.error?.message || 'Unknown error');
+        this.loading = false;
+      }
     });
   }
 
@@ -94,7 +99,7 @@ export class KidsComponent implements OnInit {
       isRecurring: [false],
       recurrenceInterval: [''],
       prorate: [false],
-      dueDate: [''] // Field for one-off due date
+      dueDate: ['']
     });
 
     feeDetailForm.get('isOneOff')?.valueChanges.subscribe(value => {
@@ -161,38 +166,72 @@ export class KidsComponent implements OnInit {
   }
 
   loadKids() {
+    this.loading = true;
     if (this.isAdminOrSuperAdmin()) {
       this.kidService.getAllKids(this.searchForm.value.status).subscribe({
-        next: (kids) => (this.kids = kids),
-        error: (err) => alert('Failed to load kids: ' + (err.error || 'Unknown error'))
+        next: (kids) => {
+          this.kids = kids;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to load kids: ' + (err.error?.message || 'Unknown error');
+          this.loading = false;
+        }
       });
     } else {
       this.kidService.getKidsByParent(this.user!.userId).subscribe({
-        next: (kids) => (this.kids = kids),
-        error: (err) => alert('Failed to load kids: ' + (err.error || 'Unknown error'))
+        next: (kids) => {
+          this.kids = kids;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to load kids: ' + (err.error?.message || 'Unknown error');
+          this.loading = false;
+        }
       });
     }
   }
 
   loadParents() {
+    this.loading = true;
     this.userService.getParentUsers().subscribe({
-      next: (parents) => (this.parents = parents),
-      error: (err) => alert('Failed to load parents: ' + (err.error || 'Unknown error'))
+      next: (parents) => {
+        this.parents = parents;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to load parents: ' + (err.error?.message || 'Unknown error');
+        this.loading = false;
+      }
     });
   }
 
   loadFeeSchedules() {
+    this.loading = true;
     this.feeScheduleService.getActiveFeeSchedules(new Date().toISOString().split('T')[0]).subscribe({
-      next: (schedules) => (this.feeSchedules = schedules),
-      error: (err) => alert('Failed to load fee schedules: ' + (err.error || 'Unknown error'))
+      next: (schedules) => {
+        this.feeSchedules = schedules;
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to load fee schedules: ' + (err.error?.message || 'Unknown error');
+        this.loading = false;
+      }
     });
   }
 
   searchKids() {
     if (this.isAdminOrSuperAdmin()) {
+      this.loading = true;
       this.kidService.searchKids(this.searchForm.value).subscribe({
-        next: (kids) => (this.kids = kids),
-        error: (err) => alert('Failed to search kids: ' + (err.error || 'Unknown error'))
+        next: (kids) => {
+          this.kids = kids;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to search kids: ' + (err.error?.message || 'Unknown error');
+          this.loading = false;
+        }
       });
     }
   }
@@ -203,7 +242,8 @@ export class KidsComponent implements OnInit {
       return;
     }
 
-    const kidRequest: KidRequest = {
+    this.loading = true;
+    const kidRequest = {
       parentId: this.addKidForm.value.parentId,
       firstName: this.addKidForm.value.firstName,
       lastName: this.addKidForm.value.lastName,
@@ -215,7 +255,7 @@ export class KidsComponent implements OnInit {
         chargeType: detail.chargeType,
         recurrenceInterval: detail.recurrenceInterval,
         prorate: detail.prorate,
-        dueDate: detail.dueDate // Include dueDate for one-off charges
+        dueDate: detail.dueDate
       }))
     };
 
@@ -224,22 +264,31 @@ export class KidsComponent implements OnInit {
         this.loadKids();
         this.addKidForm.reset();
         this.feeDetails.clear();
-        // Fetch and display invoices and schedules
         this.feeInvoiceService.getInvoicesForKid(kid.kidId, '2000-01-01', '2100-12-31').subscribe({
           next: (invoices) => {
             this.recentInvoices = invoices;
             this.http.get<BillingSchedule[]>(`http://localhost:8082/api/billing-schedules/kid/${kid.kidId}`).subscribe({
               next: (schedules) => {
                 this.recentSchedules = schedules;
+                this.loading = false;
                 alert(`Kid added successfully! Generated ${invoices.length} invoices and ${schedules.length} billing schedules.`);
               },
-              error: (err) => alert('Failed to load billing schedules: ' + (err.error || 'Unknown error'))
+              error: (err) => {
+                this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
+                this.loading = false;
+              }
             });
           },
-          error: (err) => alert('Failed to load invoices: ' + (err.error || 'Unknown error'))
+          error: (err) => {
+            this.error = 'Failed to load invoices: ' + (err.error?.message || 'Unknown error');
+            this.loading = false;
+          }
         });
       },
-      error: (err) => alert('Failed to add kid: ' + (err.error || 'Unknown error'))
+      error: (err) => {
+        this.error = 'Failed to add kid: ' + (err.error?.message || 'Unknown error');
+        this.loading = false;
+      }
     });
   }
 
@@ -260,9 +309,16 @@ export class KidsComponent implements OnInit {
   }
 
   updateStatus(kid: Kid) {
+    this.loading = true;
     this.kidService.updateKidStatus(kid.kidId, kid.status).subscribe({
-      next: () => this.loadKids(),
-      error: (err) => alert('Failed to update status: ' + (err.error || 'Unknown error'))
+      next: () => {
+        this.loadKids();
+        this.loading = false;
+      },
+      error: (err) => {
+        this.error = 'Failed to update status: ' + (err.error?.message || 'Unknown error');
+        this.loading = false;
+      }
     });
   }
 
@@ -270,9 +326,16 @@ export class KidsComponent implements OnInit {
     if (!this.isAdminOrSuperAdmin()) return;
 
     if (confirm('Are you sure you want to delete this kid?')) {
+      this.loading = true;
       this.kidService.deleteKid(kidId).subscribe({
-        next: () => this.loadKids(),
-        error: (err) => alert('Failed to delete kid: ' + (err.error || 'Cannot delete kid with open invoices'))
+        next: () => {
+          this.loadKids();
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to delete kid: ' + (err.error?.message || 'Cannot delete kid with open invoices');
+          this.loading = false;
+        }
       });
     }
   }
@@ -288,9 +351,16 @@ export class KidsComponent implements OnInit {
 
   loadOutstandingBalances() {
     if (this.isAdminOrSuperAdmin()) {
+      this.loading = true;
       this.kidService.getKidsWithOutstandingBalances(this.outstandingForm.value).subscribe({
-        next: (kidBalances) => (this.kidBalances = kidBalances),
-        error: (err) => alert('Failed to load outstanding balances: ' + (err.error || 'Unknown error'))
+        next: (kidBalances) => {
+          this.kidBalances = kidBalances;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to load outstanding balances: ' + (err.error?.message || 'Unknown error');
+          this.loading = false;
+        }
       });
     }
   }

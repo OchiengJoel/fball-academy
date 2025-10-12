@@ -1,7 +1,9 @@
 <div class="container-fluid mt-4">
   <h2>Kids Management</h2>
+  <div *ngIf="loading" class="alert alert-info">Loading...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
-  <div class="mb-3" *ngIf="isAdminOrSuperAdmin()">
+  <div *ngIf="isAdminOrSuperAdmin()" class="mb-3">
     <h3>Search Kids</h3>
     <form [formGroup]="searchForm" (ngSubmit)="searchKids()">
       <div class="row">
@@ -23,7 +25,7 @@
           </select>
         </div>
         <div class="col-md-2">
-          <button type="submit" class="btn btn-primary">Search</button>
+          <button type="submit" class="btn btn-primary" [disabled]="loading">Search</button>
         </div>
       </div>
     </form>
@@ -34,8 +36,7 @@
     <form [formGroup]="addKidForm" (ngSubmit)="addKid()">
       <div class="row">
         <div class="col-md-2">
-          <select class="form-control" formControlName="parentId"
-            [ngClass]="{'is-invalid': addKidForm.get('parentId')?.touched && addKidForm.get('parentId')?.invalid}">
+          <select class="form-control" formControlName="parentId" [ngClass]="{'is-invalid': addKidForm.get('parentId')?.touched && addKidForm.get('parentId')?.invalid}">
             <option value="">Select Parent</option>
             <option *ngFor="let parent of parents" [value]="parent.userId">
               {{ parent.firstName }} {{ parent.lastName }} ({{ parent.email }})
@@ -44,23 +45,19 @@
           <div class="invalid-feedback">Parent is required</div>
         </div>
         <div class="col-md-2">
-          <input type="text" class="form-control" placeholder="First Name" formControlName="firstName"
-            [ngClass]="{'is-invalid': addKidForm.get('firstName')?.touched && addKidForm.get('firstName')?.invalid}">
+          <input type="text" class="form-control" placeholder="First Name" formControlName="firstName" [ngClass]="{'is-invalid': addKidForm.get('firstName')?.touched && addKidForm.get('firstName')?.invalid}">
           <div class="invalid-feedback">First Name is required</div>
         </div>
         <div class="col-md-2">
-          <input type="text" class="form-control" placeholder="Last Name" formControlName="lastName"
-            [ngClass]="{'is-invalid': addKidForm.get('lastName')?.touched && addKidForm.get('lastName')?.invalid}">
+          <input type="text" class="form-control" placeholder="Last Name" formControlName="lastName" [ngClass]="{'is-invalid': addKidForm.get('lastName')?.touched && addKidForm.get('lastName')?.invalid}">
           <div class="invalid-feedback">Last Name is required</div>
         </div>
         <div class="col-md-2">
-          <input type="date" class="form-control" formControlName="dateOfBirth"
-            [ngClass]="{'is-invalid': addKidForm.get('dateOfBirth')?.touched && addKidForm.get('dateOfBirth')?.invalid}">
+          <input type="date" class="form-control" formControlName="dateOfBirth" [ngClass]="{'is-invalid': addKidForm.get('dateOfBirth')?.touched && addKidForm.get('dateOfBirth')?.invalid}">
           <div class="invalid-feedback">Date of Birth is required</div>
         </div>
         <div class="col-md-2">
-          <input type="date" class="form-control" formControlName="enrollmentDate"
-            [ngClass]="{'is-invalid': addKidForm.get('enrollmentDate')?.touched && addKidForm.get('enrollmentDate')?.invalid}">
+          <input type="date" class="form-control" formControlName="enrollmentDate" [ngClass]="{'is-invalid': addKidForm.get('enrollmentDate')?.touched && addKidForm.get('enrollmentDate')?.invalid}">
           <div class="invalid-feedback">Enrollment Date is required</div>
         </div>
       </div>
@@ -68,11 +65,9 @@
       <div class="mt-3">
         <h4>Fee Details</h4>
         <button type="button" class="btn btn-secondary mb-2" (click)="addFeeDetail()">Add Fee</button>
-        <div *ngFor="let feeDetail of feeDetails.controls; let i = index" class="row mb-2"
-          [formGroup]="$any(feeDetail)">
+        <div *ngFor="let feeDetail of feeDetails.controls; let i = index" class="row mb-2" [formGroup]="$any(feeDetail)">
           <div class="col-md-2">
-            <select class="form-control" formControlName="feeScheduleId"
-              [ngClass]="{'is-invalid': feeDetail.get('feeScheduleId')?.touched && feeDetail.get('feeScheduleId')?.invalid}">
+            <select class="form-control" formControlName="feeScheduleId" [ngClass]="{'is-invalid': feeDetail.get('feeScheduleId')?.touched && feeDetail.get('feeScheduleId')?.invalid}">
               <option value="">Select Fee Type</option>
               <option *ngFor="let schedule of feeSchedules" [value]="schedule.feeScheduleId">
                 {{ schedule.description }}
@@ -81,32 +76,24 @@
             <div class="invalid-feedback">Fee Type is required</div>
           </div>
           <div class="col-md-2">
-            <input type="number" class="form-control" placeholder="Amount" formControlName="amount"
-              [ngClass]="{'is-invalid': feeDetail.get('amount')?.touched && feeDetail.get('amount')?.invalid}">
+            <input type="number" class="form-control" placeholder="Amount" formControlName="amount" [ngClass]="{'is-invalid': feeDetail.get('amount')?.touched && feeDetail.get('amount')?.invalid}">
             <div class="invalid-feedback">Valid amount is required</div>
           </div>
           <div class="col-md-2">
             <div class="form-check form-check-inline">
-              <input type="checkbox" class="form-check-input" [formControlName]="'isOneOff'"
-                (change)="toggleChargeType(i, 'ONE_OFF', $event)"
-                [checked]="feeDetail.get('chargeType')?.value === 'ONE_OFF'">
+              <input type="checkbox" class="form-check-input" formControlName="isOneOff" (change)="toggleChargeType(i, 'ONE_OFF', $event)" [checked]="feeDetail.get('chargeType')?.value === 'ONE_OFF'">
               <label class="form-check-label">One-Off</label>
             </div>
             <div class="form-check form-check-inline">
-              <input type="checkbox" class="form-check-input" [formControlName]="'isRecurring'"
-                (change)="toggleChargeType(i, 'RECURRING', $event)"
-                [checked]="feeDetail.get('chargeType')?.value === 'RECURRING'">
+              <input type="checkbox" class="form-check-input" formControlName="isRecurring" (change)="toggleChargeType(i, 'RECURRING', $event)" [checked]="feeDetail.get('chargeType')?.value === 'RECURRING'">
               <label class="form-check-label">Recurring</label>
             </div>
-            <div class="invalid-feedback"
-              *ngIf="feeDetail.get('chargeType')?.touched && feeDetail.get('chargeType')?.invalid">
+            <div class="invalid-feedback" *ngIf="feeDetail.get('chargeType')?.touched && feeDetail.get('chargeType')?.invalid">
               Charge Type is required
             </div>
           </div>
           <div class="col-md-2">
-            <select class="form-control" formControlName="recurrenceInterval"
-              [ngClass]="{'is-invalid': feeDetail.get('recurrenceInterval')?.touched && feeDetail.get('recurrenceInterval')?.invalid}"
-              [disabled]="feeDetail.get('chargeType')?.value === 'ONE_OFF'">
+            <select class="form-control" formControlName="recurrenceInterval" [ngClass]="{'is-invalid': feeDetail.get('recurrenceInterval')?.touched && feeDetail.get('recurrenceInterval')?.invalid}" [disabled]="feeDetail.get('chargeType')?.value === 'ONE_OFF'">
               <option value="">Select Interval</option>
               <option *ngFor="let interval of recurrenceIntervals" [value]="interval">{{ interval }}</option>
             </select>
@@ -114,8 +101,7 @@
           </div>
           <div class="col-md-2">
             <div class="form-check">
-              <input type="checkbox" class="form-check-input" formControlName="prorate"
-                [disabled]="feeDetail.get('chargeType')?.value === 'ONE_OFF'">
+              <input type="checkbox" class="form-check-input" formControlName="prorate" [disabled]="feeDetail.get('chargeType')?.value === 'ONE_OFF'">
               <label class="form-check-label">Prorate First Billing</label>
             </div>
           </div>
@@ -129,8 +115,7 @@
       </div>
 
       <div class="mt-3">
-        <button type="submit" class="btn btn-primary" [disabled]="addKidForm.invalid && addKidForm.touched">Add
-          Kid</button>
+        <button type="submit" class="btn btn-primary" [disabled]="addKidForm.invalid || loading">Add Kid</button>
       </div>
     </form>
   </div>
@@ -149,10 +134,9 @@
       <tr *ngFor="let kid of kids">
         <td>{{ kid.code }}</td>
         <td>{{ kid.firstName }} {{ kid.lastName }}</td>
-        <td>{{ kid.dateOfBirth }}</td>
+        <td>{{ kid.dateOfBirth | date }}</td>
         <td>
-          <select *ngIf="isAdminOrSuperAdmin()" [(ngModel)]="kid.status" (change)="updateStatus(kid)"
-            [ngModelOptions]="{standalone: true}">
+          <select *ngIf="isAdminOrSuperAdmin()" [(ngModel)]="kid.status" (change)="updateStatus(kid)" [ngModelOptions]="{standalone: true}">
             <option value="ACTIVE">Active</option>
             <option value="INACTIVE">Inactive</option>
             <option value="SUSPENDED">Suspended</option>
@@ -160,11 +144,9 @@
           <span *ngIf="!isAdminOrSuperAdmin()">{{ kid.status }}</span>
         </td>
         <td>
-          <button *ngIf="isAdminOrSuperAdmin()" class="btn btn-sm btn-warning me-2"
-            (click)="openEditDialog(kid)">Edit</button>
+          <button *ngIf="isAdminOrSuperAdmin()" class="btn btn-sm btn-warning me-2" (click)="openEditDialog(kid)">Edit</button>
           <button class="btn btn-sm btn-primary me-2" (click)="openDetailsDialog(kid)">View Details</button>
-          <button *ngIf="isAdminOrSuperAdmin()" class="btn btn-sm btn-danger"
-            (click)="deleteKid(kid.kidId)">Delete</button>
+          <button *ngIf="isAdminOrSuperAdmin()" class="btn btn-sm btn-danger" (click)="deleteKid(kid.kidId)">Delete</button>
         </td>
       </tr>
     </tbody>
@@ -178,26 +160,23 @@
           <input type="number" class="form-control" placeholder="Parent ID (optional)" formControlName="parentId">
         </div>
         <div class="col-md-6">
-          <input type="date" class="form-control" placeholder="Due Date Before (optional)"
-            formControlName="dueDateBefore">
+          <input type="date" class="form-control" placeholder="Due Date Before (optional)" formControlName="dueDateBefore">
         </div>
       </div>
-      <button type="submit" class="btn btn-primary mt-2">Load Outstanding Balances</button>
+      <button type="submit" class="btn btn-primary mt-2" [disabled]="loading">Load Outstanding Balances</button>
     </form>
     <table *ngIf="kidBalances.length > 0" class="table table-striped">
       <thead>
         <tr>
-          <th>Code</th>
+          <th>Kid ID</th>
           <th>Name</th>
-          <th>Parent</th>
           <th>Outstanding Balance</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let kb of kidBalances">
-          <td>{{ kb.kid.code }}</td>
-          <td>{{ kb.kid.firstName }} {{ kb.kid.lastName }}</td>
-          <td>{{ kb.kid.parent.firstName }} {{ kb.kid.parent.lastName }}</td>
+          <td>{{ kb.kidId }}</td>
+          <td>{{ kb.kidName }}</td>
           <td>{{ kb.outstandingBalance | currency }}</td>
         </tr>
       </tbody>
@@ -220,10 +199,10 @@
       <tbody>
         <tr *ngFor="let invoice of recentInvoices">
           <td>{{ invoice.invoiceId }}</td>
-          <td>{{ invoice.kid.firstName }} {{ invoice.kid.lastName }}</td>
-          <td>{{ invoice.feeSchedule.description }}</td>
+          <td>{{ invoice.kidName }}</td>
+          <td>{{ invoice.feeScheduleDescription }}</td>
           <td>{{ invoice.amount | currency }}</td>
-          <td>{{ invoice.dueDate }}</td>
+          <td>{{ invoice.dueDate | date }}</td>
           <td>{{ invoice.status }}</td>
         </tr>
       </tbody>
@@ -242,10 +221,10 @@
       <tbody>
         <tr *ngFor="let schedule of recentSchedules">
           <td>{{ schedule.billingScheduleId }}</td>
-          <td>{{ schedule.kid.firstName }} {{ schedule.kid.lastName }}</td>
-          <td>{{ schedule.feeSchedule.description }}</td>
+          <td>{{ schedule.kidName }}</td>
+          <td>{{ schedule.feeScheduleDescription }}</td>
           <td>{{ schedule.amount | currency }}</td>
-          <td>{{ schedule.dueDate }}</td>
+          <td>{{ schedule.dueDate | date }}</td>
           <td>{{ schedule.recurrenceInterval }}</td>
         </tr>
       </tbody>

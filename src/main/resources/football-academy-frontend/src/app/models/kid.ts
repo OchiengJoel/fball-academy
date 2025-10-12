@@ -14,6 +14,7 @@ export interface Kid {
 }
 
 export interface KidBalance {
-    kid: Kid;
-    outstandingBalance: number;
+  kidId: number;
+  kidName: string;
+  outstandingBalance: number;
 }
