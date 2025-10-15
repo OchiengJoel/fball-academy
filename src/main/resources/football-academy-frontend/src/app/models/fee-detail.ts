@@ -1,13 +1,3 @@
-export interface KidRequest {
-  parentId: number;
-  firstName: string;
-  lastName: string;
-  dateOfBirth: string;
-  enrollmentDate: string;
-  feeDetails: FeeDetail[];
-}
-
-
 export interface FeeDetail {
     description: string;
     amount: number;
@@ -15,4 +5,6 @@ export interface FeeDetail {
     recurrenceInterval?: string;
     prorate: boolean;
     dueDate?: string;
+    startDate?: string;
+    endDate?: string;
 }

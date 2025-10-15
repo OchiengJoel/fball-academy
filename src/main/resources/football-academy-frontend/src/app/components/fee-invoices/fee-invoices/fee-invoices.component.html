@@ -24,12 +24,12 @@
           <div class="col-md-3 mb-3">
             <label for="feeScheduleId" class="form-label">Fee Schedule</label>
             <select id="feeScheduleId" class="form-select" formControlName="feeScheduleId"
-              [ngClass]="{'is-invalid': invoiceForm.get('feeScheduleId')?.touched && invoiceForm.get('feeScheduleId')?.invalid}">
-              <option value="">Select Fee Schedule</option>
-              <option *ngFor="let schedule of feeSchedules" [value]="schedule.feeScheduleId">{{ schedule.description }}
+              [ngClass]="{'is-invalid': invoiceForm.get('feeScheduleId')?.touched && invoiceForm.get('billingScheduleId')?.invalid}">
+              <option value="">Select Billing Schedule</option>
+              <option *ngFor="let schedule of billingSchedules" [value]="schedule.billingScheduleId">{{ schedule.description }}
                 ({{ schedule.amount | currency }})</option>
             </select>
-            <div class="invalid-feedback">Please select a fee schedule.</div>
+            <div class="invalid-feedback">Please select a billing schedule.</div>
           </div>
           <div class="col-md-3 mb-3">
             <label for="dueDate" class="form-label">Due Date</label>

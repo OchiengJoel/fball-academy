@@ -5,11 +5,14 @@ export interface BillingSchedule {
     billingScheduleId: number;
     kidId: number;
     kidName: string;
-    feeScheduleId: number;
-    feeScheduleDescription: string;
+    description: string;
     amount: number;
+    type: 'ONE_OFF' | 'RECURRING';
+    recurrenceInterval?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY';
+    startDate?: string;
+    endDate?: string;
     dueDate: string;
-    recurrenceInterval: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY';
+    blocked: boolean;
     createdAt: string;
     updatedAt: string;
 }

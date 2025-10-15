@@ -4,11 +4,13 @@ import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { ToastrService } from 'ngx-toastr';
+import { BillingSchedule } from 'src/app/models/billing-schedule';
 import { FeeInvoice } from 'src/app/models/fee-invoice';
 import { FeeSchedule } from 'src/app/models/fee-schedule';
 import { Kid, KidBalance } from 'src/app/models/kid';
 import { PaginatedResponse } from 'src/app/models/page';
 import { User } from 'src/app/models/user';
+import { BillingScheduleService } from 'src/app/services/billing-schedule.service';
 import { FeeInvoiceService } from 'src/app/services/fee-invoice.service';
 import { FeeScheduleService } from 'src/app/services/fee-schedule.service';
 import { KidService } from 'src/app/services/kid.service';
@@ -20,9 +22,9 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./fee-invoices.component.css']
 })
 export class FeeInvoicesComponent implements OnInit {
-  displayedColumns: string[] = ['invoiceId', 'kidName', 'feeScheduleDescription', 'amount', 'dueDate', 'status'];
+  displayedColumns: string[] = ['invoiceId', 'kidName', 'feeScheduleDescription', 'amount', 'dueDate', 'status', 'actions'];
   dataSource = new MatTableDataSource<FeeInvoice>([]);
-  feeSchedules: FeeSchedule[] = [];
+  billingSchedules: BillingSchedule[] = [];
   kids: Kid[] = [];
   kidBalances: KidBalance[] = [];
   user: User | null = null;
@@ -38,7 +40,7 @@ export class FeeInvoicesComponent implements OnInit {
 
   constructor(
     private feeInvoiceService: FeeInvoiceService,
-    private feeScheduleService: FeeScheduleService,
+    private billingScheduleService: BillingScheduleService,
     private kidService: KidService,
     private userService: UserService,
     private fb: FormBuilder,
@@ -46,7 +48,7 @@ export class FeeInvoicesComponent implements OnInit {
   ) {
     this.invoiceForm = this.fb.group({
       kidId: ['', [Validators.required, Validators.min(1)]],
-      feeScheduleId: ['', [Validators.required, Validators.min(1)]],
+      billingScheduleId: ['', [Validators.required, Validators.min(1)]],
       dueDate: ['', [Validators.required, this.futureDateValidator()]]
     });
     this.filterForm = this.fb.group({
@@ -89,9 +91,9 @@ export class FeeInvoicesComponent implements OnInit {
         this.loading = false;
       }
     });
-    this.feeScheduleService.getActiveFeeSchedules(new Date().toISOString().split('T')[0]).subscribe({
+    this.billingScheduleService.getActiveBillingSchedules(new Date().toISOString().split('T')[0]).subscribe({
       next: (schedules) => {
-        this.feeSchedules = schedules;
+        this.billingSchedules = schedules;
       },
       error: (err) => {
         this.error = 'Failed to load fee schedules: ' + (err.error?.message || 'Unknown error');
@@ -162,27 +164,27 @@ export class FeeInvoicesComponent implements OnInit {
   }
 
   loadAllInvoices(page: number = 0, size: number = 20) {
-  if (this.filterForm.valid) {
-    this.loading = true;
-    this.error = null;
-    this.feeInvoiceService.getAllInvoices(this.filterForm.value.startDate, this.filterForm.value.endDate).subscribe({
-      next: (response: PaginatedResponse<FeeInvoice>) => {
-        this.dataSource.data = response.content;
-        this.paginator.length = response.totalElements;
-        this.paginator.pageIndex = response.number;
-        this.paginator.pageSize = response.size;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Failed to load all invoices: ' + (err.error?.message || 'Unknown error');
-        this.toastr.error(this.error, 'Error');
-        this.loading = false;
-      }
-    });
-  } else {
-    this.toastr.warning('Please select valid start and end dates.', 'Warning');
+    if (this.filterForm.valid) {
+      this.loading = true;
+      this.error = null;
+      this.feeInvoiceService.getAllInvoices(this.filterForm.value.startDate, this.filterForm.value.endDate).subscribe({
+        next: (response: PaginatedResponse<FeeInvoice>) => {
+          this.dataSource.data = response.content;
+          this.paginator.length = response.totalElements;
+          this.paginator.pageIndex = response.number;
+          this.paginator.pageSize = response.size;
+          this.loading = false;
+        },
+        error: (err) => {
+          this.error = 'Failed to load all invoices: ' + (err.error?.message || 'Unknown error');
+          this.toastr.error(this.error, 'Error');
+          this.loading = false;
+        }
+      });
+    } else {
+      this.toastr.warning('Please select valid start and end dates.', 'Warning');
+    }
   }
-}
 
   loadInvoices() {
     if (this.filterForm.valid && this.filterForm.value.selectedKidId) {
@@ -240,6 +242,49 @@ export class FeeInvoicesComponent implements OnInit {
       });
     } else {
       this.toastr.warning('Please select valid start and end dates.', 'Warning');
+    }
+  }
+
+  loadBillingSchedules() {
+    this.billingScheduleService.getActiveBillingSchedules(new Date().toISOString().split('T')[0]).subscribe({
+      next: (schedules) => {
+        this.billingSchedules = schedules;
+      },
+      error: (err) => {
+        this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
+        this.toastr.error(this.error, 'Error');
+      }
+    });
+  }
+
+  deleteInvoice(invoiceId: number) {
+    if (confirm('Are you sure you want to delete this invoice?')) {
+      this.feeInvoiceService.deleteInvoice(invoiceId).subscribe({
+        next: () => {
+          this.toastr.success('Invoice deleted successfully!', 'Success');
+          this.loadInvoices();
+        },
+        error: (err) => {
+          this.error = 'Failed to delete invoice: ' + (err.error?.message || 'Unknown error');
+          this.toastr.error(this.error, 'Error');
+        }
+      });
+    }
+  }
+
+  toggleBlockSchedule(billingScheduleId: number, block: boolean) {
+    const action = block ? 'block' : 'unblock';
+    if (confirm(`Are you sure you want to ${action} this billing schedule?`)) {
+      this.billingScheduleService.toggleBlockSchedule(billingScheduleId, block).subscribe({
+        next: () => {
+          this.toastr.success(`Billing schedule ${action}ed successfully!`, 'Success');
+          this.loadBillingSchedules();
+        },
+        error: (err) => {
+          this.error = `Failed to ${action} billing schedule: ` + (err.error?.message || 'Unknown error');
+          this.toastr.error(this.error, 'Error');
+        }
+      });
     }
   }
 }

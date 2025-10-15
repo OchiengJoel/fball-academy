@@ -14,6 +14,7 @@ import { FeeInvoice } from 'src/app/models/fee-invoice';
 import { BillingSchedule } from 'src/app/models/billing-schedule';
 import { FeeInvoiceService } from 'src/app/services/fee-invoice.service';
 import { HttpClient } from '@angular/common/http';
+import { BillingScheduleService } from 'src/app/services/billing-schedule.service';
 
 @Component({
   selector: 'app-kids',
@@ -27,7 +28,7 @@ export class KidsComponent implements OnInit {
   searchForm: FormGroup;
   outstandingForm: FormGroup;
   kidBalances: KidBalance[] = [];
-  feeSchedules: FeeSchedule[] = [];
+  billingSchedules: BillingSchedule[] = [];
   parents: User[] = [];
   recentInvoices: FeeInvoice[] = [];
   recentSchedules: BillingSchedule[] = [];
@@ -39,7 +40,7 @@ export class KidsComponent implements OnInit {
   constructor(
     private kidService: KidService,
     private userService: UserService,
-    private feeScheduleService: FeeScheduleService,
+    private billingScheduleService: BillingScheduleService,
     private feeInvoiceService: FeeInvoiceService,
     private dialog: MatDialog,
     private http: HttpClient,
@@ -74,7 +75,7 @@ export class KidsComponent implements OnInit {
         this.user = user;
         this.loadKids();
         if (this.isAdminOrSuperAdmin()) {
-          this.loadFeeSchedules();
+          this.loadBillingSchedules();
           this.loadParents();
         }
         this.loading = false;
@@ -92,7 +93,7 @@ export class KidsComponent implements OnInit {
 
   addFeeDetail() {
     const feeDetailForm = this.fb.group({
-      feeScheduleId: ['', [Validators.required]],
+      description: ['', [Validators.required]],
       amount: ['', [Validators.required, Validators.min(0.01)]],
       chargeType: ['', [Validators.required]],
       isOneOff: [false],
@@ -206,15 +207,15 @@ export class KidsComponent implements OnInit {
     });
   }
 
-  loadFeeSchedules() {
+  loadBillingSchedules() {
     this.loading = true;
-    this.feeScheduleService.getActiveFeeSchedules(new Date().toISOString().split('T')[0]).subscribe({
+    this.billingScheduleService.getActiveBillingSchedules(new Date().toISOString().split('T')[0]).subscribe({
       next: (schedules) => {
-        this.feeSchedules = schedules;
+        this.billingSchedules = schedules;
         this.loading = false;
       },
       error: (err) => {
-        this.error = 'Failed to load fee schedules: ' + (err.error?.message || 'Unknown error');
+        this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
         this.loading = false;
       }
     });
@@ -237,60 +238,60 @@ export class KidsComponent implements OnInit {
   }
 
   addKid() {
-    if (this.addKidForm.invalid) {
-      this.addKidForm.markAllAsTouched();
-      return;
-    }
+        if (this.addKidForm.invalid) {
+            this.addKidForm.markAllAsTouched();
+            return;
+        }
 
-    this.loading = true;
-    const kidRequest = {
-      parentId: this.addKidForm.value.parentId,
-      firstName: this.addKidForm.value.firstName,
-      lastName: this.addKidForm.value.lastName,
-      dateOfBirth: this.addKidForm.value.dateOfBirth,
-      enrollmentDate: this.addKidForm.value.enrollmentDate,
-      feeDetails: this.addKidForm.value.feeDetails.map((detail: any) => ({
-        feeScheduleId: detail.feeScheduleId,
-        amount: detail.amount,
-        chargeType: detail.chargeType,
-        recurrenceInterval: detail.recurrenceInterval,
-        prorate: detail.prorate,
-        dueDate: detail.dueDate
-      }))
-    };
+        this.loading = true;
+        const kidRequest = {
+            parentId: this.addKidForm.value.parentId,
+            firstName: this.addKidForm.value.firstName,
+            lastName: this.addKidForm.value.lastName,
+            dateOfBirth: this.addKidForm.value.dateOfBirth,
+            enrollmentDate: this.addKidForm.value.enrollmentDate,
+            feeDetails: this.addKidForm.value.feeDetails.map((detail: any) => ({
+                description: detail.description,
+                amount: detail.amount,
+                chargeType: detail.chargeType,
+                recurrenceInterval: detail.recurrenceInterval,
+                prorate: detail.prorate,
+                dueDate: detail.dueDate
+            }))
+        };
 
-    this.kidService.addKid(kidRequest).subscribe({
-      next: (kid) => {
-        this.loadKids();
-        this.addKidForm.reset();
-        this.feeDetails.clear();
-        this.feeInvoiceService.getInvoicesForKid(kid.kidId, '2000-01-01', '2100-12-31').subscribe({
-          next: (invoices) => {
-            this.recentInvoices = invoices;
-            this.http.get<BillingSchedule[]>(`http://localhost:8082/api/billing-schedules/kid/${kid.kidId}`).subscribe({
-              next: (schedules) => {
-                this.recentSchedules = schedules;
+        this.kidService.addKid(kidRequest).subscribe({
+            next: (kid) => {
+                this.loadKids();
+                this.addKidForm.reset();
+                this.feeDetails.clear();
+                this.feeInvoiceService.getInvoicesForKid(kid.kidId, '2000-01-01', '2100-12-31').subscribe({
+                    next: (invoices) => {
+                        this.recentInvoices = invoices;
+                        this.http.get<BillingSchedule[]>(`http://localhost:8082/api/billing-schedules/kid/${kid.kidId}`).subscribe({
+                            next: (schedules) => {
+                                this.recentSchedules = schedules;
+                                this.loading = false;
+                                alert(`Kid added successfully! Generated ${invoices.length} invoices and ${schedules.length} billing schedules.`);
+                            },
+                            error: (err) => {
+                                this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
+                                this.loading = false;
+                            }
+                        });
+                    },
+                    error: (err) => {
+                        this.error = 'Failed to load invoices: ' + (err.error?.message || 'Unknown error');
+                        this.loading = false;
+                    }
+                });
+            },
+            error: (err) => {
+                this.error = 'Failed to add kid: ' + (err.error?.message || 'Unknown error');
                 this.loading = false;
-                alert(`Kid added successfully! Generated ${invoices.length} invoices and ${schedules.length} billing schedules.`);
-              },
-              error: (err) => {
-                this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
-                this.loading = false;
-              }
-            });
-          },
-          error: (err) => {
-            this.error = 'Failed to load invoices: ' + (err.error?.message || 'Unknown error');
-            this.loading = false;
-          }
+            }
         });
-      },
-      error: (err) => {
-        this.error = 'Failed to add kid: ' + (err.error?.message || 'Unknown error');
-        this.loading = false;
-      }
-    });
-  }
+    }
 
   openEditDialog(kid: Kid) {
     if (!this.isAdminOrSuperAdmin()) return;
@@ -299,7 +300,7 @@ export class KidsComponent implements OnInit {
       width: '500px',
       maxWidth: '90vw',
       panelClass: 'custom-dialog-container',
-      data: { kid: { ...kid }, feeSchedules: this.feeSchedules }
+      data: { kid: { ...kid }, billingSchedules: this.billingSchedules }
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result) {

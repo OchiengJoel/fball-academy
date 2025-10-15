@@ -16,8 +16,8 @@ export interface FeeInvoice {
   invoiceId: number;
   kidId: number;
   kidName: string;
-  feeScheduleId: number;
-  feeScheduleDescription: string;
+  billingScheduleId: number;
+  billingScheduleDescription: string;
   amount: number;
   dueDate: string;
   status: 'OPEN' | 'PAID' | 'OVERDUE';

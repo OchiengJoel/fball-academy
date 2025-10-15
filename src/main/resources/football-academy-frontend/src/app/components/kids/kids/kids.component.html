@@ -69,7 +69,7 @@
           <div class="col-md-2">
             <select class="form-control" formControlName="feeScheduleId" [ngClass]="{'is-invalid': feeDetail.get('feeScheduleId')?.touched && feeDetail.get('feeScheduleId')?.invalid}">
               <option value="">Select Fee Type</option>
-              <option *ngFor="let schedule of feeSchedules" [value]="schedule.feeScheduleId">
+              <option *ngFor="let schedule of billingSchedules" [value]="schedule.billingScheduleId">
                 {{ schedule.description }}
               </option>
             </select>
@@ -200,7 +200,7 @@
         <tr *ngFor="let invoice of recentInvoices">
           <td>{{ invoice.invoiceId }}</td>
           <td>{{ invoice.kidName }}</td>
-          <td>{{ invoice.feeScheduleDescription }}</td>
+          <td>{{ invoice.billingScheduleDescription }}</td>
           <td>{{ invoice.amount | currency }}</td>
           <td>{{ invoice.dueDate | date }}</td>
           <td>{{ invoice.status }}</td>
@@ -222,7 +222,7 @@
         <tr *ngFor="let schedule of recentSchedules">
           <td>{{ schedule.billingScheduleId }}</td>
           <td>{{ schedule.kidName }}</td>
-          <td>{{ schedule.feeScheduleDescription }}</td>
+          <td>{{ schedule.description }}</td>
           <td>{{ schedule.amount | currency }}</td>
           <td>{{ schedule.dueDate | date }}</td>
           <td>{{ schedule.recurrenceInterval }}</td>
