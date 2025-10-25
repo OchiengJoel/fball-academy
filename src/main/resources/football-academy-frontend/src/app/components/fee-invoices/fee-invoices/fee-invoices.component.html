@@ -2,48 +2,11 @@
   <h2 class="mb-4">Fee Invoices</h2>
   <div *ngIf="loading" class="alert alert-info">Loading...</div>
   <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
-  <div *ngIf="successMessage" class="alert alert-success">{{ successMessage }}</div>
 
-  <!-- Create Invoice Form (Admin/Super Admin only) -->
-  <div *ngIf="isAdminOrSuperAdmin()" class="card mb-4">
-    <div class="card-header">
-      <h3 class="card-title">Create Invoice</h3>
-    </div>
-    <div class="card-body">
-      <form [formGroup]="invoiceForm" (ngSubmit)="createInvoice()">
-        <div class="row">
-          <div class="col-md-3 mb-3">
-            <label for="kidId" class="form-label">Kid</label>
-            <select id="kidId" class="form-select" formControlName="kidId"
-              [ngClass]="{'is-invalid': invoiceForm.get('kidId')?.touched && invoiceForm.get('kidId')?.invalid}">
-              <option value="">Select Kid</option>
-              <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
-            </select>
-            <div class="invalid-feedback">Please select a kid.</div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label for="feeScheduleId" class="form-label">Fee Schedule</label>
-            <select id="feeScheduleId" class="form-select" formControlName="feeScheduleId"
-              [ngClass]="{'is-invalid': invoiceForm.get('feeScheduleId')?.touched && invoiceForm.get('billingScheduleId')?.invalid}">
-              <option value="">Select Billing Schedule</option>
-              <option *ngFor="let schedule of billingSchedules" [value]="schedule.billingScheduleId">{{ schedule.description }}
-                ({{ schedule.amount | currency }})</option>
-            </select>
-            <div class="invalid-feedback">Please select a billing schedule.</div>
-          </div>
-          <div class="col-md-3 mb-3">
-            <label for="dueDate" class="form-label">Due Date</label>
-            <input id="dueDate" type="date" class="form-control" formControlName="dueDate"
-              [ngClass]="{'is-invalid': invoiceForm.get('dueDate')?.touched && invoiceForm.get('dueDate')?.invalid}">
-            <div class="invalid-feedback">Please select a valid due date (not in the past).</div>
-          </div>
-          <div class="col-md-3 mb-3 align-self-end">
-            <button type="submit" class="btn btn-primary w-100" [disabled]="invoiceForm.invalid || loading">Create
-              Invoice</button>
-          </div>
-        </div>
-      </form>
-    </div>
+  <!-- Action Buttons (Admin/Super Admin only) -->
+  <div *ngIf="isAdminOrSuperAdmin()" class="mb-4">
+    <button class="btn btn-primary me-2" (click)="openCreateInvoiceDialog()">Create Invoice</button>
+    <button class="btn btn-primary" (click)="openBatchInvoiceDialog()">Generate Batch Invoices</button>
   </div>
 
   <!-- Filter Invoices Form -->
@@ -54,19 +17,45 @@
     <div class="card-body">
       <form [formGroup]="filterForm" (ngSubmit)="loadInvoices()">
         <div class="row">
+          <div class="col-md-12 mb-3" *ngIf="isAdminOrSuperAdmin()">
+            <div class="form-check">
+              <input class="form-check-input" type="checkbox" id="includeInactiveKids" [(ngModel)]="includeInactiveKids"
+                (ngModelChange)="onIncludeInactiveKidsChange($event)" [ngModelOptions]="{standalone: true}">
+              <label class="form-check-label" for="includeInactiveKids">
+                <strong>Include Suspended & Inactive Kids</strong>
+                <small class="text-muted ms-2">
+                  ({{ includeInactiveKids ? 'Showing all kids (' + kids.length + ')' : 'Showing active kids only (' +
+                  kids.length + ')' }})
+                </small>
+              </label>
+            </div>
+            <hr class="my-2">
+          </div>
           <div class="col-md-3 mb-3">
             <label for="selectedKidId" class="form-label">Kid</label>
             <select id="selectedKidId" class="form-select" formControlName="selectedKidId" (change)="loadInvoices()">
               <option value="">All Kids</option>
-              <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+              <optgroup *ngIf="isAdminOrSuperAdmin()" [label]="includeInactiveKids ? 'All Kids' : 'Active Kids Only'">
+                <option *ngFor="let kid of kids" [value]="kid.kidId">
+                  {{ kid.firstName }} {{ kid.lastName }}
+                  <small *ngIf="kid.status !== 'ACTIVE'" class="text-muted ms-1">
+                    ({{ kid.status | titlecase }})
+                  </small>
+                </option>
+              </optgroup>
+              <optgroup *ngIf="!isAdminOrSuperAdmin()" label="My Kids">
+                <option *ngFor="let kid of kids" [value]="kid.kidId">
+                  {{ kid.firstName }} {{ kid.lastName }}
+                </option>
+              </optgroup>
             </select>
+            <div *ngIf="kids.length === 0 && !loading" class="text-muted small mt-1">
+              No kids found
+            </div>
           </div>
           <div class="col-md-3 mb-3">
             <label for="startDate" class="form-label">Start Date</label>
-            <input matInput [matDatepicker]="startPicker" id="startDate" class="form-control"
-              formControlName="startDate" (dateChange)="loadInvoices()">
-            <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
-            <mat-datepicker #startPicker></mat-datepicker>
+            <input type="date" class="form-control" formControlName="startDate" (change)="loadInvoices()">
             <div *ngIf="filterForm.get('startDate')?.invalid && filterForm.get('startDate')?.touched"
               class="text-danger">
               Start date is required.
@@ -74,9 +63,9 @@
           </div>
           <div class="col-md-3 mb-3">
             <label for="endDate" class="form-label">End Date</label>
-            <input id="endDate" type="date" class="form-control" formControlName="endDate" (change)="loadInvoices()">
+            <input type="date" class="form-control" formControlName="endDate" (change)="loadInvoices()">
             <div *ngIf="filterForm.get('endDate')?.invalid && filterForm.get('endDate')?.touched" class="text-danger">
-              End date is required.
+              End date is required and must be after start date.
             </div>
           </div>
           <div class="col-md-3 mb-3 align-self-end">
@@ -99,17 +88,25 @@
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Invoice ID</th>
           <td mat-cell *matCellDef="let invoice">{{ invoice.invoiceId }}</td>
         </ng-container>
-        <ng-container matColumnDef="kidName">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Kid</th>
-          <td mat-cell *matCellDef="let invoice">{{ invoice.kidName }}</td>
+        <ng-container matColumnDef="invoiceNumber">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Invoice No.</th>
+          <td mat-cell *matCellDef="let invoice">{{ invoice.invoiceNumber }}</td>
         </ng-container>
-        <ng-container matColumnDef="feeScheduleDescription">
-          <th mat-header-cell *matHeaderCellDef mat-sort-header>Fee Schedule</th>
-          <td mat-cell *matCellDef="let invoice">{{ invoice.feeScheduleDescription }}</td>
+        <ng-container matColumnDef="client">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Client</th>
+          <td mat-cell *matCellDef="let invoice">{{ invoice.kidName || invoice.clientName }}</td>
+        </ng-container>
+        <ng-container matColumnDef="items">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Items</th>
+          <td mat-cell *matCellDef="let invoice">
+            <ng-container *ngFor="let item of invoice.items">
+              {{ item.description }} ({{ item.amount | currency:'KSH' }})<br>
+            </ng-container>
+          </td>
         </ng-container>
         <ng-container matColumnDef="amount">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
-          <td mat-cell *matCellDef="let invoice">{{ invoice.amount | currency }}</td>
+          <td mat-cell *matCellDef="let invoice">{{ invoice.amount | currency:'KSH' }}</td>
         </ng-container>
         <ng-container matColumnDef="dueDate">
           <th mat-header-cell *matHeaderCellDef mat-sort-header>Due Date</th>
@@ -127,6 +124,13 @@
             </span>
           </td>
         </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let invoice">
+            <button class="btn btn-sm btn-danger" (click)="deleteInvoice(invoice.invoiceId)"
+              [disabled]="invoice.status !== 'OPEN' || loading">Delete</button>
+          </td>
+        </ng-container>
         <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
         <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
       </table>
@@ -138,7 +142,7 @@
   </div>
 
   <!-- Outstanding Balance -->
-  <h3 *ngIf="filterForm.value.selectedKidId" class="mt-4">Outstanding Balance: {{ balance | currency }}</h3>
+  <h3 *ngIf="filterForm.value.selectedKidId" class="mt-4">Outstanding Balance: {{ balance | currency:'KSH' }}</h3>
 
   <!-- Kid Balances -->
   <div *ngIf="user?.role === 'PARENT' || user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" class="card mt-4">
@@ -159,7 +163,7 @@
         <tbody>
           <tr *ngFor="let balance of kidBalances">
             <td>{{ balance.kidName }}</td>
-            <td>{{ balance.outstandingBalance | currency }}</td>
+            <td>{{ balance.outstandingBalance | currency:'KSH' }}</td>
           </tr>
         </tbody>
       </table>

@@ -1,3 +1,4 @@
+import { ItemType } from "../components/enums/item-type.enum";
 import { FeeSchedule } from "./fee-schedule";
 import { Kid } from "./kid";
 
@@ -9,6 +10,8 @@ export interface BillingSchedule {
     amount: number;
     type: 'ONE_OFF' | 'RECURRING';
     recurrenceInterval?: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY' | 'SEMI_ANNUALLY' | 'ANNUALLY';
+    itemTypeId: number;
+    itemTypeName: string;
     startDate?: string;
     endDate?: string;
     dueDate: string;
@@ -16,4 +19,6 @@ export interface BillingSchedule {
     createdAt: string;
     updatedAt: string;
 }
+
+
 

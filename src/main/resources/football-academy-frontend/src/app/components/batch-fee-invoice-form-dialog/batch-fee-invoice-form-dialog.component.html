@@ -1,0 +1,61 @@
+<div class="dialog-container">
+    <h2 mat-dialog-title>Generate Batch Invoices</h2>
+    <mat-dialog-content>
+        <div *ngIf="loading" class="alert alert-info text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            Loading kids...
+        </div>
+
+        <div *ngIf="error && !loading" class="alert alert-danger">{{ error }}</div>
+
+        <form *ngIf="!loading" [formGroup]="batchForm">
+            <div class="row mb-3">
+                <div class="col-md-12 mb-3">
+                    <label for="kidIds" class="form-label">Kids (Leave empty for all active kids)</label>
+                    <select multiple id="kidIds" class="form-select" formControlName="kidIds">
+                        <option *ngFor="let kid of data.kids" [value]="kid.kidId">
+                            {{ kid.firstName }} {{ kid.lastName }}
+                            <small *ngIf="kid.status !== 'ACTIVE'" class="text-muted ms-1">
+                                ({{ kid.status | titlecase }})
+                            </small>
+                        </option>
+                    </select>
+                    <div *ngIf="data.kids.length === 0" class="text-muted small mt-1">
+                        No kids available
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="startDate" class="form-label">Start Date</label>
+                    <input id="startDate" type="date" class="form-control" formControlName="startDate">
+                    <div class="text-danger"
+                        *ngIf="batchForm.get('startDate')?.touched && batchForm.get('startDate')?.invalid">
+                        Start date is required.
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="endDate" class="form-label">End Date</label>
+                    <input id="endDate" type="date" class="form-control" formControlName="endDate">
+                    <div class="text-danger"
+                        *ngIf="batchForm.get('endDate')?.touched && batchForm.get('endDate')?.invalid">
+                        End date must be after start date.
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="dueDate" class="form-label">Due Date</label>
+                    <input id="dueDate" type="date" class="form-control" formControlName="dueDate">
+                    <div class="text-danger"
+                        *ngIf="batchForm.get('dueDate')?.touched && batchForm.get('dueDate')?.invalid">
+                        Please select a valid due date (not in the past).
+                    </div>
+                </div>
+            </div>
+        </form>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button class="btn btn-primary" (click)="generateBatchInvoices()"
+            [disabled]="batchForm.invalid || loading">Generate Invoices</button>
+        <button class="btn btn-secondary" (click)="close()">Cancel</button>
+    </mat-dialog-actions>
+</div>

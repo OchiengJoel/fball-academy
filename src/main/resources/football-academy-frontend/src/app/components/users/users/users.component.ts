@@ -36,7 +36,7 @@ export class UsersComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^\+?\d{10,15}$/)]],
       role: ['PARENT', [Validators.required]],
-      password: [''] 
+      password: ['']
       // password: ['', [Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)]]
     });
 
@@ -119,8 +119,9 @@ export class UsersComponent implements OnInit {
 
   openEditDialog(user: User) {
     const dialogRef = this.dialog.open(UserEditDialogComponent, {
-      width: '900px',
+      width: '500px',
       maxWidth: '90vw',
+      maxHeight: '90vh',
       panelClass: 'custom-dialog-container', // Custom class for centering
       data: { user: { ...user } }
     });
@@ -162,7 +163,7 @@ export class UsersComponent implements OnInit {
   }
 
   isValidPassword(password: string): boolean {
-  const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-  return !password || passwordPattern.test(password);
-}
+    const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    return !password || passwordPattern.test(password);
+  }
 }

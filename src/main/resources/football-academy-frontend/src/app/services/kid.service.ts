@@ -8,10 +8,9 @@ import { Kid, KidBalance } from '../models/kid';
   providedIn: 'root'
 })
 export class KidService {
-
   private apiUrl = 'http://localhost:8082/api/kids';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   addKid(kidRequest: KidRequest): Observable<Kid> {
     return this.http.post<Kid>(this.apiUrl, kidRequest);
@@ -20,10 +19,6 @@ export class KidService {
   updateKid(kidId: number, kidRequest: KidRequest): Observable<Kid> {
     return this.http.put<Kid>(`${this.apiUrl}/${kidId}`, kidRequest);
   }
-
-  // getKidsByParent(parentId: number, status?: string): Observable<Kid[]> {
-  //   return this.http.get<Kid[]>(`${this.apiUrl}/parent/${parentId}`, { params: { status } });
-  // }
 
   getAllKids(status?: string): Observable<Kid[]> {
     const params: { [key: string]: string } = {};
@@ -61,12 +56,7 @@ export class KidService {
     return this.http.delete<void>(`${this.apiUrl}/${kidId}`);
   }
 
-  updateFeeSchedules(kidId: number, feeScheduleIds: number[]): Observable<Kid> {
-    return this.http.put<Kid>(`${this.apiUrl}/${kidId}/fee-schedules`, feeScheduleIds);
-  }
-
   getKidsWithOutstandingBalances(criteria: { parentId?: number; dueDateBefore?: string }): Observable<KidBalance[]> {
     return this.http.get<KidBalance[]>(`${this.apiUrl}/outstanding`, { params: criteria });
   }
-
 }

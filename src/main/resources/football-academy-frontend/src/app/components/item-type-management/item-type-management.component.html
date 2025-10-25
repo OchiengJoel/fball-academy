@@ -1,0 +1,64 @@
+<div class="container mt-4">
+    <h2 class="mb-4">Manage Item Types</h2>
+    <div *ngIf="loading" class="alert alert-info">Loading...</div>
+    <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="card-title">{{ editingItemType ? 'Edit Item Type' : 'Create Item Type' }}</h3>
+        </div>
+        <div class="card-body">
+            <form [formGroup]="itemTypeForm" (ngSubmit)="submitForm()">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
+                        <input id="name" type="text" class="form-control" formControlName="name"
+                               [ngClass]="{'is-invalid': itemTypeForm.get('name')?.touched && itemTypeForm.get('name')?.invalid}">
+                        <div class="invalid-feedback">Name is required and must be at least 2 characters.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <input id="description" type="text" class="form-control" formControlName="description">
+                    </div>
+                    <div class="col-md-12 mb-3">
+                        <button type="submit" class="btn btn-primary me-2" [disabled]="itemTypeForm.invalid || loading">
+                            {{ editingItemType ? 'Update' : 'Create' }}
+                        </button>
+                        <button type="button" class="btn btn-secondary" (click)="resetForm()" *ngIf="editingItemType">Cancel</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Item Types</h3>
+        </div>
+        <div class="card-body">
+            <table mat-table [dataSource]="dataSource" class="mat-elevation-z2">
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef>Name</th>
+                    <td mat-cell *matCellDef="let itemType">{{ itemType.name }}</td>
+                </ng-container>
+                <ng-container matColumnDef="description">
+                    <th mat-header-cell *matHeaderCellDef>Description</th>
+                    <td mat-cell *matCellDef="let itemType">{{ itemType.description || '-' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let itemType">
+                        <button class="btn btn-sm btn-primary me-2" (click)="editItemType(itemType)">Edit</button>
+                        <button class="btn btn-sm btn-danger" (click)="deleteItemType(itemType.id)" [disabled]="loading">Delete</button>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+            <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+            <div *ngIf="dataSource.data.length === 0" class="alert alert-info mt-3">
+                No item types found.
+            </div>
+        </div>
+    </div>
+</div>

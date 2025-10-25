@@ -1,20 +1,18 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { Kid, KidBalance } from 'src/app/models/kid';
-import { KidRequest } from 'src/app/models/kid-request';
 import { User } from 'src/app/models/user';
 import { KidService } from 'src/app/services/kid.service';
 import { UserService } from 'src/app/services/user.service';
 import { KidDetailsDialogComponent } from '../kid-details-dialog/kid-details-dialog.component';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { FeeSchedule } from 'src/app/models/fee-schedule';
-import { FeeScheduleService } from 'src/app/services/fee-schedule.service';
 import { KidEditDialogComponent } from '../kid-edit-dialog/kid-edit-dialog.component';
 import { FeeInvoice } from 'src/app/models/fee-invoice';
 import { BillingSchedule } from 'src/app/models/billing-schedule';
 import { FeeInvoiceService } from 'src/app/services/fee-invoice.service';
 import { HttpClient } from '@angular/common/http';
 import { BillingScheduleService } from 'src/app/services/billing-schedule.service';
+import { ItemType } from '../../enums/item-type.enum';
 
 @Component({
   selector: 'app-kids',
@@ -32,12 +30,14 @@ export class KidsComponent implements OnInit {
   parents: User[] = [];
   recentInvoices: FeeInvoice[] = [];
   recentSchedules: BillingSchedule[] = [];
+  itemTypes = Object.keys(ItemType) as (keyof typeof ItemType)[];
+  feeTypes = ['ONE_OFF', 'RECURRING'];
   user: User | null = null;
-  recurrenceIntervals = ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY'];
+  recurrenceIntervals = ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY', 'ONE_TIME'];
   loading: boolean = false;
   error: string | null = null;
 
-  constructor(
+   constructor(
     private kidService: KidService,
     private userService: UserService,
     private billingScheduleService: BillingScheduleService,
@@ -96,53 +96,33 @@ export class KidsComponent implements OnInit {
       description: ['', [Validators.required]],
       amount: ['', [Validators.required, Validators.min(0.01)]],
       chargeType: ['', [Validators.required]],
-      isOneOff: [false],
-      isRecurring: [false],
+      itemType: ['', [Validators.required]],
       recurrenceInterval: [''],
       prorate: [false],
       dueDate: ['']
     });
 
-    feeDetailForm.get('isOneOff')?.valueChanges.subscribe(value => {
-      if (value) {
-        feeDetailForm.get('isRecurring')?.setValue(false);
-        feeDetailForm.get('chargeType')?.setValue('ONE_OFF');
-        feeDetailForm.get('recurrenceInterval')?.setValue(null);
-        feeDetailForm.get('prorate')?.setValue(false);
-        feeDetailForm.get('recurrenceInterval')?.clearValidators();
-      } else if (!feeDetailForm.get('isRecurring')?.value) {
-        feeDetailForm.get('chargeType')?.setValue('');
-      }
-      feeDetailForm.get('recurrenceInterval')?.updateValueAndValidity();
-    });
-
-    feeDetailForm.get('isRecurring')?.valueChanges.subscribe(value => {
-      if (value) {
-        feeDetailForm.get('isOneOff')?.setValue(false);
-        feeDetailForm.get('chargeType')?.setValue('RECURRING');
-        feeDetailForm.get('recurrenceInterval')?.setValidators([Validators.required]);
-      } else if (!feeDetailForm.get('isOneOff')?.value) {
-        feeDetailForm.get('chargeType')?.setValue('');
-      }
-      feeDetailForm.get('recurrenceInterval')?.updateValueAndValidity();
-    });
-
-    feeDetailForm.get('chargeType')?.valueChanges.subscribe(value => {
+     feeDetailForm.get('chargeType')?.valueChanges.subscribe(value => {
       if (value === 'ONE_OFF') {
-        feeDetailForm.get('isOneOff')?.setValue(true);
-        feeDetailForm.get('isRecurring')?.setValue(false);
-        feeDetailForm.get('recurrenceInterval')?.setValue(null);
+        feeDetailForm.get('recurrenceInterval')?.setValue('ONE_TIME');
         feeDetailForm.get('prorate')?.setValue(false);
         feeDetailForm.get('recurrenceInterval')?.clearValidators();
       } else if (value === 'RECURRING') {
-        feeDetailForm.get('isOneOff')?.setValue(false);
-        feeDetailForm.get('isRecurring')?.setValue(true);
         feeDetailForm.get('recurrenceInterval')?.setValidators([Validators.required]);
+        feeDetailForm.get('recurrenceInterval')?.setValue('MONTHLY'); // Default to MONTHLY
       }
       feeDetailForm.get('recurrenceInterval')?.updateValueAndValidity();
     });
 
     this.feeDetails.push(feeDetailForm);
+  }
+
+  removeFeeDetail(index: number) {
+    this.feeDetails.removeAt(index);
+  }
+
+  isAdminOrSuperAdmin(): boolean {
+    return this.user?.role === 'ADMIN' || this.user?.role === 'SUPER_ADMIN';
   }
 
   toggleChargeType(index: number, type: string, event: Event) {
@@ -156,14 +136,6 @@ export class KidsComponent implements OnInit {
       feeDetailForm.get('chargeType')?.setValue('');
       feeDetailForm.get(type === 'ONE_OFF' ? 'isOneOff' : 'isRecurring')?.setValue(false);
     }
-  }
-
-  removeFeeDetail(index: number) {
-    this.feeDetails.removeAt(index);
-  }
-
-  isAdminOrSuperAdmin(): boolean {
-    return this.user?.role === 'ADMIN' || this.user?.role === 'SUPER_ADMIN';
   }
 
   loadKids() {
@@ -221,7 +193,7 @@ export class KidsComponent implements OnInit {
     });
   }
 
-  searchKids() {
+   searchKids() {
     if (this.isAdminOrSuperAdmin()) {
       this.loading = true;
       this.kidService.searchKids(this.searchForm.value).subscribe({
@@ -238,60 +210,61 @@ export class KidsComponent implements OnInit {
   }
 
   addKid() {
-        if (this.addKidForm.invalid) {
-            this.addKidForm.markAllAsTouched();
-            return;
-        }
-
-        this.loading = true;
-        const kidRequest = {
-            parentId: this.addKidForm.value.parentId,
-            firstName: this.addKidForm.value.firstName,
-            lastName: this.addKidForm.value.lastName,
-            dateOfBirth: this.addKidForm.value.dateOfBirth,
-            enrollmentDate: this.addKidForm.value.enrollmentDate,
-            feeDetails: this.addKidForm.value.feeDetails.map((detail: any) => ({
-                description: detail.description,
-                amount: detail.amount,
-                chargeType: detail.chargeType,
-                recurrenceInterval: detail.recurrenceInterval,
-                prorate: detail.prorate,
-                dueDate: detail.dueDate
-            }))
-        };
-
-        this.kidService.addKid(kidRequest).subscribe({
-            next: (kid) => {
-                this.loadKids();
-                this.addKidForm.reset();
-                this.feeDetails.clear();
-                this.feeInvoiceService.getInvoicesForKid(kid.kidId, '2000-01-01', '2100-12-31').subscribe({
-                    next: (invoices) => {
-                        this.recentInvoices = invoices;
-                        this.http.get<BillingSchedule[]>(`http://localhost:8082/api/billing-schedules/kid/${kid.kidId}`).subscribe({
-                            next: (schedules) => {
-                                this.recentSchedules = schedules;
-                                this.loading = false;
-                                alert(`Kid added successfully! Generated ${invoices.length} invoices and ${schedules.length} billing schedules.`);
-                            },
-                            error: (err) => {
-                                this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
-                                this.loading = false;
-                            }
-                        });
-                    },
-                    error: (err) => {
-                        this.error = 'Failed to load invoices: ' + (err.error?.message || 'Unknown error');
-                        this.loading = false;
-                    }
-                });
-            },
-            error: (err) => {
-                this.error = 'Failed to add kid: ' + (err.error?.message || 'Unknown error');
-                this.loading = false;
-            }
-        });
+    if (this.addKidForm.invalid) {
+      this.addKidForm.markAllAsTouched();
+      return;
     }
+
+    this.loading = true;
+    const kidRequest = {
+      parentId: this.addKidForm.value.parentId,
+      firstName: this.addKidForm.value.firstName,
+      lastName: this.addKidForm.value.lastName,
+      dateOfBirth: this.addKidForm.value.dateOfBirth,
+      enrollmentDate: this.addKidForm.value.enrollmentDate,
+      feeDetails: this.addKidForm.value.feeDetails.map((detail: any) => ({
+        description: detail.description,
+        amount: detail.amount,
+        chargeType: detail.chargeType,
+        itemType: detail.itemType,
+        recurrenceInterval: detail.chargeType === 'ONE_OFF' ? 'ONE_TIME' : detail.recurrenceInterval,
+        prorate: detail.prorate,
+        dueDate: detail.dueDate
+      }))
+    };
+
+    this.kidService.addKid(kidRequest).subscribe({
+      next: (kid) => {
+        this.loadKids();
+        this.addKidForm.reset();
+        this.feeDetails.clear();
+        this.feeInvoiceService.getInvoicesForKid(kid.kidId, '2000-01-01', '2100-12-31').subscribe({
+          next: (invoices) => {
+            this.recentInvoices = invoices;
+            this.http.get<BillingSchedule[]>(`http://localhost:8082/api/billing-schedules/kid/${kid.kidId}`).subscribe({
+              next: (schedules) => {
+                this.recentSchedules = schedules;
+                this.loading = false;
+                alert(`Kid added successfully! Generated ${invoices.length} invoices and ${schedules.length} billing schedules.`);
+              },
+              error: (err) => {
+                this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
+                this.loading = false;
+              }
+            });
+          },
+          error: (err) => {
+            this.error = 'Failed to load invoices: ' + (err.error?.message || 'Unknown error');
+            this.loading = false;
+          }
+        });
+      },
+      error: (err) => {
+        this.error = 'Failed to add kid: ' + (err.error?.message || 'Unknown error');
+        this.loading = false;
+      }
+    });
+  }
 
   openEditDialog(kid: Kid) {
     if (!this.isAdminOrSuperAdmin()) return;
@@ -341,12 +314,16 @@ export class KidsComponent implements OnInit {
     }
   }
 
-  openDetailsDialog(kid: Kid) {
-    this.dialog.open(KidDetailsDialogComponent, {
-      width: '800px',
+   openDetailsDialog(kid: Kid) {
+    const dialogRef = this.dialog.open(KidDetailsDialogComponent, {
+      width: '90vw',
       maxWidth: '90vw',
+      maxHeight: '90vh',
       panelClass: 'custom-dialog-container',
-      data: { kid }
+      data: { kid },
+      disableClose: false,
+      autoFocus: true,
+      position: { top: '50px' }
     });
   }
 

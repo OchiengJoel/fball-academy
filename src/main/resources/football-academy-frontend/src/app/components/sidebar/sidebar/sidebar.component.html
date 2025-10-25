@@ -5,6 +5,7 @@
   <nav class="nav flex-column">
     <a class="nav-link text-white" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
     <a class="nav-link text-white" routerLink="/kids" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Kids</a>
+    <a class="nav-link text-white" routerLink="/item-types" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Item Types</a>
     <a class="nav-link text-white" routerLink="/fee-invoices" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Fee Invoices</a>
     <a class="nav-link text-white" routerLink="/payments" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Payments</a>
     <a class="nav-link text-white" routerLink="/progress" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Progress</a>

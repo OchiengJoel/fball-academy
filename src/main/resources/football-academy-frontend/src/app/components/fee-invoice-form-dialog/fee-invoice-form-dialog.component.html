@@ -1,0 +1,147 @@
+<div class="dialog-container">
+    <h2 mat-dialog-title>Create Invoice</h2>
+    <mat-dialog-content>
+        <div *ngIf="loading" class="alert alert-info text-center">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            Loading...
+        </div>
+
+        <div *ngIf="error && !loading" class="alert alert-danger">{{ error }}</div>
+
+        <form *ngIf="!loading" [formGroup]="invoiceForm">
+            <div class="row mb-3">
+                <div class="col-md-6 mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="isManualInvoice" formControlName="isManualInvoice">
+                        <label class="form-check-label" for="isManualInvoice">Manual Invoice (Non-Kid Client)</label>
+                    </div>
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="kidId" class="form-label">Kid <span *ngIf="!isManualInvoice" class="text-danger">*</span></label>
+                    <select id="kidId" class="form-select" formControlName="kidId"
+                            [ngClass]="{'is-invalid': invoiceForm.get('kidId')?.touched && invoiceForm.get('kidId')?.invalid}">
+                        <option value="">Select Kid</option>
+                        <option *ngFor="let kid of data.kids" [value]="kid.kidId">
+                            {{ kid.firstName }} {{ kid.lastName }}
+                            <small *ngIf="kid.status !== 'ACTIVE'" class="text-muted ms-1">
+                                ({{ kid.status | titlecase }})
+                            </small>
+                        </option>
+                    </select>
+                    <div *ngIf="data.kids.length === 0" class="text-muted small mt-1">
+                        No kids available
+                    </div>
+                    <div class="invalid-feedback">Please select a kid.</div>
+                </div>
+                <div class="col-md-6" *ngIf="isManualInvoice">
+                    <label for="clientName" class="form-label">Client Name <span class="text-danger">*</span></label>
+                    <input id="clientName" type="text" class="form-control" formControlName="clientName"
+                           [ngClass]="{'is-invalid': invoiceForm.get('clientName')?.touched && invoiceForm.get('clientName')?.invalid}">
+                    <div class="invalid-feedback">Client name is required for manual invoices.</div>
+                </div>
+                <div class="col-md-6" *ngIf="!isManualInvoice">
+                    <label for="dueDate" class="form-label">Due Date <span class="text-danger">*</span></label>
+                    <input id="dueDate" type="date" class="form-control" formControlName="dueDate"
+                           [ngClass]="{'is-invalid': invoiceForm.get('dueDate')?.touched && invoiceForm.get('dueDate')?.invalid}">
+                    <div class="invalid-feedback">Please select a valid due date (not in the past).</div>
+                </div>
+            </div>
+            <div class="row mb-3" *ngIf="isManualInvoice">
+                <div class="col-md-12">
+                    <label for="dueDate" class="form-label">Due Date <span class="text-danger">*</span></label>
+                    <input id="dueDate" type="date" class="form-control" formControlName="dueDate"
+                           [ngClass]="{'is-invalid': invoiceForm.get('dueDate')?.touched && invoiceForm.get('dueDate')?.invalid}">
+                    <div class="invalid-feedback">Please select a valid due date (not in the past).</div>
+                </div>
+            </div>
+
+            <h4>Invoice Items</h4>
+            <div formArrayName="items">
+                <div *ngFor="let item of itemsControls; let i = index" [formGroupName]="i" class="card mb-2 p-3">
+                    <div class="row">
+                        <div class="col-md-4 mb-3" *ngIf="!isManualInvoice">
+                            <label [for]="'billingScheduleId-' + i" class="form-label">Billing Schedule <span class="text-danger">*</span></label>
+                            <select [id]="'billingScheduleId-' + i" class="form-select" formControlName="billingScheduleId">
+                                <option value="">Select Billing Schedule</option>
+                                <option *ngFor="let schedule of billingSchedules" [value]="schedule.billingScheduleId">
+                                    {{ schedule.description }} ({{ schedule.amount | currency:'KSH' }})
+                                </option>
+                            </select>
+                            <div class="text-danger"
+                                 *ngIf="item.get('billingScheduleId')?.touched && item.get('billingScheduleId')?.invalid">
+                                Please select a billing schedule.
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label [for]="'itemTypeId-' + i" class="form-label">Item Type <span class="text-danger">*</span></label>
+                            <select [id]="'itemTypeId-' + i" class="form-select" formControlName="itemTypeId">
+                                <option value="">Select Item Type</option>
+                                <option *ngFor="let type of itemTypes" [value]="type.id">{{ type.name | titlecase }}</option>
+                            </select>
+                            <div class="text-danger"
+                                 *ngIf="item.get('itemTypeId')?.touched && item.get('itemTypeId')?.invalid">
+                                Please select an item type.
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label [for]="'description-' + i" class="form-label">Description <span class="text-danger">*</span></label>
+                            <input [id]="'description-' + i" type="text" class="form-control" formControlName="description">
+                            <div class="text-danger"
+                                 *ngIf="item.get('description')?.touched && item.get('description')?.invalid">
+                                Description is required.
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label [for]="'quantity-' + i" class="form-label">Quantity <span class="text-danger">*</span></label>
+                            <input [id]="'quantity-' + i" type="number" class="form-control" formControlName="quantity"
+                                   (input)="updateTotals()">
+                            <div class="text-danger"
+                                 *ngIf="item.get('quantity')?.touched && item.get('quantity')?.invalid">
+                                Quantity must be a positive number.
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label [for]="'unitCost-' + i" class="form-label">Unit Cost (KSH) <span class="text-danger">*</span></label>
+                            <input [id]="'unitCost-' + i" type="number" class="form-control" formControlName="unitCost"
+                                   (input)="updateTotals()">
+                            <div class="text-danger"
+                                 *ngIf="item.get('unitCost')?.touched && item.get('unitCost')?.invalid">
+                                Unit cost must be a positive number.
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3">
+                            <label [for]="'vatAmount-' + i" class="form-label">VAT Amount (KSH)</label>
+                            <input [id]="'vatAmount-' + i" type="number" class="form-control" formControlName="vatAmount"
+                                   (input)="updateTotals()">
+                            <div class="text-danger"
+                                 *ngIf="item.get('vatAmount')?.touched && item.get('vatAmount')?.invalid">
+                                VAT amount cannot be negative.
+                            </div>
+                        </div>
+                        <div class="col-md-3 mb-3 align-self-end">
+                            <button type="button" class="btn btn-danger w-100" (click)="removeItem(i)"
+                                    [disabled]="items.length <= 1">Remove</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-secondary mb-3" (click)="addItem()">Add Item</button>
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>Subtotal: {{ subtotal | currency:'KSH' }}</h5>
+                </div>
+                <div class="col-md-6">
+                    <h5>Total (incl. VAT): {{ total | currency:'KSH' }}</h5>
+                </div>
+            </div>
+        </form>
+    </mat-dialog-content>
+    <mat-dialog-actions>
+        <button class="btn btn-primary" (click)="createInvoice()" [disabled]="invoiceForm.invalid || loading">Create Invoice</button>
+        <button class="btn btn-secondary" (click)="close()">Cancel</button>
+    </mat-dialog-actions>
+</div>

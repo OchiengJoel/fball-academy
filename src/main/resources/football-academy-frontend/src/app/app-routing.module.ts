@@ -12,6 +12,7 @@ import { ResetPasswordComponent } from './components/reset-password/reset-passwo
 import { StatementsComponent } from './components/statements/statements/statements.component';
 import { UsersComponent } from './components/users/users/users.component';
 import { AuthGuard } from './guards/auth.guard';
+import { ItemTypeManagementComponent } from './components/item-type-management/item-type-management.component';
 
 const routes: Routes = [
 
@@ -20,6 +21,7 @@ const routes: Routes = [
   { path: 'dashboard', component: DashboardComponent, canActivate: [AuthGuard] },
   { path: 'kids', component: KidsComponent, canActivate: [AuthGuard] },
   { path: 'fee-invoices', component: FeeInvoicesComponent, canActivate: [AuthGuard] },
+  { path: 'item-types', component:ItemTypeManagementComponent, canActivate: [AuthGuard] },
   { path: 'payments', component: PaymentsComponent, canActivate: [AuthGuard] },
   { path: 'progress', component: ProgressComponent, canActivate: [AuthGuard] },
   { path: 'statements', component: StatementsComponent, canActivate: [AuthGuard] },

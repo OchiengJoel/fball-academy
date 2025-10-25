@@ -63,27 +63,83 @@ body {
 
 
 
-/* Center all Material dialogs */
-.cdk-overlay-pane.custom-dialog-container {
+/* src/styles.css - FIXED DIALOG POSITIONING */
+
+/* 1. Reset and center ALL Material dialogs */
+.cdk-overlay-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: auto;
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  z-index: 1000;
 }
 
-/* Ensure dialog content is properly sized */
+/* 2. Style the dialog pane - CRITICAL FIX */
+.cdk-overlay-pane {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: auto !important;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+}
+
+/* 3. Apply to dialogs with custom class */
+.cdk-overlay-pane.custom-dialog-container {
+  position: absolute !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  margin: auto !important;
+}
+
+/* 4. Dialog container styling */
+.mat-dialog-container {
+  padding: 20px !important;
+  border-radius: 8px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2) !important;
+  background: white !important;
+  max-width: 800px !important;
+  width: 100% !important;
+  max-height: 90vh !important;
+  overflow: hidden !important;
+}
+
+/* 5. Content overflow handling */
 .mat-dialog-content {
   max-height: 70vh !important;
-  overflow-y: auto;
+  overflow-y: auto !important;
+  padding: 0 !important;
 }
 
-/* Ensure dialog container doesn’t overflow */
-.mat-dialog-container {
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+/* 6. Title and actions */
+.mat-dialog-title {
+  margin: 0 0 16px 0 !important;
+  font-size: 1.5rem !important;
+  font-weight: 500 !important;
+}
+
+.mat-dialog-actions {
+  padding: 16px 0 0 0 !important;
+  justify-content: flex-end !important;
+  gap: 8px !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .mat-dialog-container {
+    margin: 10px !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100vh - 20px) !important;
+    padding: 16px !important;
+  }
+  
+  .mat-dialog-content {
+    max-height: 60vh !important;
+  }
 }

@@ -35,6 +35,11 @@ import { ToastrModule } from 'ngx-toastr';
 import { KidDetailsDialogComponent } from './components/kids/kid-details-dialog/kid-details-dialog.component';
 import { UserEditDialogComponent } from './components/users/user-edit-dialog/user-edit-dialog.component';
 import { KidEditDialogComponent } from './components/kids/kid-edit-dialog/kid-edit-dialog.component';
+import { BillingSchedulesComponent } from './components/billing-schedules/billing-schedules.component';
+import { FeeInvoiceFormDialogComponent } from './components/fee-invoice-form-dialog/fee-invoice-form-dialog.component';
+import { BatchFeeInvoiceFormDialogComponent } from './components/batch-fee-invoice-form-dialog/batch-fee-invoice-form-dialog.component';
+import { StatusPipePipe } from './utils/status-pipe.pipe';
+import { ItemTypeManagementComponent } from './components/item-type-management/item-type-management.component';
 
 @NgModule({
   declarations: [
@@ -54,6 +59,11 @@ import { KidEditDialogComponent } from './components/kids/kid-edit-dialog/kid-ed
     KidDetailsDialogComponent,
     UserEditDialogComponent,
     KidEditDialogComponent,
+    BillingSchedulesComponent,
+    FeeInvoiceFormDialogComponent,
+    BatchFeeInvoiceFormDialogComponent,
+    StatusPipePipe,
+    ItemTypeManagementComponent,
     
   ],
   imports: [

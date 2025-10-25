@@ -1,10 +1,11 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, Inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
-import { FeeSchedule } from 'src/app/models/fee-schedule';
+import { BillingSchedule } from 'src/app/models/billing-schedule';
 import { Kid } from 'src/app/models/kid';
 import { Statement } from 'src/app/models/statement';
 import { User } from 'src/app/models/user';
+import { BillingScheduleService } from 'src/app/services/billing-schedule.service';
 import { FeeScheduleService } from 'src/app/services/fee-schedule.service';
 import { KidService } from 'src/app/services/kid.service';
 import { StatementService } from 'src/app/services/statement.service';
@@ -20,17 +21,16 @@ export class KidDetailsDialogComponent implements OnInit {
   user: User | null = null;
   kid: Kid;
   statement: Statement | null = null;
-  feeSchedules: FeeSchedule[] = [];
+  billingSchedules: BillingSchedule[] = [];
   statementPeriodStart: string = '';
   statementPeriodEnd: string = '';
   includeDetails: boolean = false;
-  selectedFeeScheduleIds: number[] = [];
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { kid: Kid },
     private dialogRef: MatDialogRef<KidDetailsDialogComponent>,
     private statementService: StatementService,
-    private feeScheduleService: FeeScheduleService,
+    private billingScheduleService: BillingScheduleService,
     private kidService: KidService,
     private userService: UserService
   ) {
@@ -41,19 +41,9 @@ export class KidDetailsDialogComponent implements OnInit {
     this.userService.getUserByEmail(localStorage.getItem('email') || '').subscribe({
       next: (user) => {
         this.user = user;
-        this.loadFeeSchedules();
+        this.loadBillingSchedules();
       },
       error: (err) => alert('Failed to load user: ' + (err.error || 'Unknown error'))
-    });
-  }
-
-  updateFeeSchedules() {
-    this.kidService.updateFeeSchedules(this.kid.kidId, this.selectedFeeScheduleIds).subscribe({
-      next: (kid) => {
-        this.kid = kid;
-        this.loadFeeSchedules();
-      },
-      error: (err) => alert('Failed to update fee schedules: ' + (err.error || 'Unknown error'))
     });
   }
 
@@ -68,10 +58,10 @@ export class KidDetailsDialogComponent implements OnInit {
     }
   }
 
-  loadFeeSchedules() {
-    this.feeScheduleService.getActiveFeeSchedules(new Date().toISOString().split('T')[0]).subscribe({
-      next: (schedules) => (this.feeSchedules = schedules),
-      error: (err) => alert('Failed to load fee schedules: ' + (err.error || 'Unknown error'))
+  loadBillingSchedules() {
+    this.billingScheduleService.getBillingSchedulesForKid(this.kid.kidId).subscribe({
+      next: (schedules) => (this.billingSchedules = schedules),
+      error: (err) => alert('Failed to load billing schedules: ' + (err.error || 'Unknown error'))
     });
   }
 
@@ -93,17 +83,17 @@ export class KidDetailsDialogComponent implements OnInit {
     }
   }
 
-  exportFeeSchedules(format: 'pdf' | 'excel') {
-    this.feeScheduleService.exportFeeSchedules(this.kid.kidId, format).subscribe({
+  exportBillingSchedules(format: 'pdf' | 'excel') {
+    this.billingScheduleService.exportBillingSchedules(this.kid.kidId, format).subscribe({
       next: (blob) => {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `fee_schedules_${this.kid.kidId}.${format}`;
+        a.download = `billing_schedules_${this.kid.kidId}.${format}`;
         a.click();
         window.URL.revokeObjectURL(url);
       },
-      error: (err) => alert('Failed to export fee schedules: ' + (err.error || 'Unknown error'))
+      error: (err) => alert('Failed to export billing schedules: ' + (err.error || 'Unknown error'))
     });
   }
 
@@ -124,4 +114,5 @@ export class KidDetailsDialogComponent implements OnInit {
   close() {
     this.dialogRef.close();
   }
+
 }

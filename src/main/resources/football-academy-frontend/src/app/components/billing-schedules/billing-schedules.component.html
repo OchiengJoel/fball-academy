@@ -1,0 +1,83 @@
+<div class="container mt-4">
+  <h2 class="mb-4">Billing Schedules</h2>
+  <div *ngIf="loading" class="alert alert-info">Loading...</div>
+  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
+
+  <!-- Filter Form -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3 class="card-title">Select Kid</h3>
+    </div>
+    <div class="card-body">
+      <form [formGroup]="filterForm" (ngSubmit)="loadBillingSchedules()">
+        <div class="row">
+          <div class="col-md-3 mb-3">
+            <label for="selectedKidId" class="form-label">Kid</label>
+            <select id="selectedKidId" class="form-select" formControlName="selectedKidId" (change)="loadBillingSchedules()">
+              <option value="">Select Kid</option>
+              <option *ngFor="let kid of kids" [value]="kid.kidId">
+                {{ kid.firstName }} {{ kid.lastName }}
+                <small *ngIf="kid.status !== 'ACTIVE'" class="text-muted ms-1">({{ kid.status | titlecase }})</small>
+              </option>
+            </select>
+            <div *ngIf="filterForm.get('selectedKidId')?.invalid && filterForm.get('selectedKidId')?.touched" class="text-danger">
+              Please select a kid.
+            </div>
+          </div>
+          <div class="col-md-3 mb-3">
+            <label for="status" class="form-label">Status</label>
+            <select id="status" class="form-select" formControlName="status" (change)="loadKids()">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+              <option value="SUSPENDED">Suspended</option>
+            </select>
+          </div>
+          <div class="col-md-3 mb-3 align-self-end">
+            <button type="submit" class="btn btn-primary w-100" [disabled]="filterForm.invalid || loading">Load Schedules</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Billing Schedules Table -->
+  <div class="card mb-4">
+    <div class="card-header">
+      <h3 class="card-title">Billing Schedule</h3>
+    </div>
+    <div class="card-body">
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z2">
+        <ng-container matColumnDef="periodStart">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>From</th>
+          <td mat-cell *matCellDef="let period">{{ period.periodStart | date:'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="periodEnd">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>To</th>
+          <td mat-cell *matCellDef="let period">{{ period.periodEnd | date:'dd/MM/yyyy' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="description">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Description</th>
+          <td mat-cell *matCellDef="let period">{{ period.description }}</td>
+        </ng-container>
+        <ng-container matColumnDef="amount">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Amount</th>
+          <td mat-cell *matCellDef="let period">{{ period.amount | currency:'KSH' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let period">
+            <button class="btn btn-sm btn-primary me-2" (click)="generateInvoice(period)" [disabled]="period.hasInvoice || loading">Generate Invoice</button>
+            <button class="btn btn-sm btn-warning me-2" (click)="toggleBlock(period)" [disabled]="loading">{{ period.blocked ? 'Unblock' : 'Block' }}</button>
+            <button class="btn btn-sm btn-danger" (click)="deleteInvoice(period)" [disabled]="!period.hasInvoice || loading">Delete Invoice</button>
+          </td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+      <div *ngIf="dataSource.data.length === 0" class="alert alert-info mt-3">
+        No billing schedules found for the selected kid.
+      </div>
+    </div>
+  </div>
+</div>

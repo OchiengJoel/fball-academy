@@ -1,5 +1,5 @@
 <div class="dialog-container">
-  <h2 mat-dialog-title>{{ kid.firstName }} {{ kid.lastName }} Details</h2>
+  <h2 mat-dialog-title><b>{{ kid.firstName }} {{ kid.lastName }} Details</b></h2>
   <mat-dialog-content>
     <mat-tab-group>
       <!-- Statement Tab -->
@@ -69,11 +69,11 @@
         </div>
       </mat-tab>
 
-      <!-- Fee Schedules Tab -->
-      <mat-tab label="Fee Schedules">
+      <!-- Billing Schedules Tab -->
+      <mat-tab label="Billing Schedules">
         <div class="p-3">
-          <button class="btn btn-primary me-2 mb-3" (click)="exportFeeSchedules('pdf')">Export to PDF</button>
-          <button class="btn btn-primary mb-3" (click)="exportFeeSchedules('excel')">Export to Excel</button>
+          <button class="btn btn-primary me-2 mb-3" (click)="exportBillingSchedules('pdf')">Export to PDF</button>
+          <button class="btn btn-primary mb-3" (click)="exportBillingSchedules('excel')">Export to Excel</button>
           <table class="table table-striped">
             <thead>
               <tr>
@@ -83,27 +83,23 @@
                 <th>Recurrence</th>
                 <th>Start Date</th>
                 <th>End Date</th>
+                <th>Due Date</th>
+                <th>Blocked</th>
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let schedule of feeSchedules">
+              <tr *ngFor="let schedule of billingSchedules">
                 <td>{{ schedule.description }}</td>
                 <td>{{ schedule.amount | currency }}</td>
                 <td>{{ schedule.type }}</td>
                 <td>{{ schedule.recurrenceInterval || '-' }}</td>
                 <td>{{ schedule.startDate || '-' }}</td>
                 <td>{{ schedule.endDate || '-' }}</td>
+                <td>{{ schedule.dueDate || '-' }}</td>
+                <td>{{ schedule.blocked ? 'Yes' : 'No' }}</td>
               </tr>
             </tbody>
           </table>
-        </div>
-
-        <div class="p-3" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'">
-          <h4>Assign Fee Schedules</h4>
-          <select multiple class="form-control" [(ngModel)]="selectedFeeScheduleIds" name="feeScheduleIds">
-            <option *ngFor="let schedule of feeSchedules" [value]="schedule.feeScheduleId">{{ schedule.description }}</option>
-          </select>
-          <button class="btn btn-primary mt-2" (click)="updateFeeSchedules()">Update Fee Schedules</button>
         </div>
       </mat-tab>
 
