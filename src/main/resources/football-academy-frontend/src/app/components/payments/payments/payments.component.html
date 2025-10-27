@@ -1,80 +1,155 @@
-<div class="container mt-4">
-      <h2>Payments</h2>
-      <div *ngIf="user?.role === 'ADMIN'" class="mb-3">
-        <h3>Record Payment</h3>
-        <form (ngSubmit)="recordPayment()">
-          <div class="row">
-            <div class="col-md-3">
-              <select class="form-control" [(ngModel)]="payment.kid.kidId" name="kidId" required>
-                <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <input type="number" class="form-control" placeholder="Amount" [(ngModel)]="payment.amount" name="amount" required>
-            </div>
-            <div class="col-md-3">
-              <select class="form-control" [(ngModel)]="payment.paymentMethod" name="paymentMethod" required>
-                <option value="CASH">Cash</option>
-                <option value="CARD">Card</option>
-                <option value="MOBILE">Mobile</option>
-              </select>
-            </div>
-            <div class="col-md-3">
-              <button type="submit" class="btn btn-primary">Record Payment</button>
-            </div>
-          </div>
-        </form>
-      </div>
-      <div class="mb-3">
-        <h3>Filter Payments</h3>
-        <div class="row">
-          <div class="col-md-3">
-            <select class="form-control" [(ngModel)]="selectedKidId" (change)="loadPayments()">
-              <option value="">Select Kid</option>
-              <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
-            </select>
-          </div>
-          <div class="col-md-3">
-            <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadPayments()">
-          </div>
-          <div class="col-md-3">
-            <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadPayments()">
-          </div>
+<div class="container mt-6">
+  <h2>Payments</h2>
+  <div *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" class="mb-3">
+    <h3>Record Payment</h3>
+    <form [formGroup]="paymentForm" (ngSubmit)="recordPayment()">
+      <div class="row">
+        <div class="col-md-3">
+          <label for="kidId">Kid</label>
+          <select id="kidId" class="form-control" formControlName="kidId" (change)="onKidChange($event)">
+            <option value="">Select Kid</option>
+            <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="amount">Amount</label>
+          <input id="amount" type="number" class="form-control" formControlName="amount" required>
+        </div>
+        <div class="col-md-3">
+          <label for="paymentMethod">Payment Method</label>
+          <select id="paymentMethod" class="form-control" formControlName="paymentMethod" required>
+            <option value="CASH">Cash</option>
+            <option value="CARD">Card</option>
+            <option value="MOBILE">Mobile</option>
+            <option value="BANK_TRANSFER">Bank Transfer</option>
+            <option value="DIGITAL_WALLET">Digital Wallet</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label for="cashbookId">Cashbook</label>
+          <select id="cashbookId" class="form-control" formControlName="cashbookId" required>
+            <option value="">Select Cashbook</option>
+            <option *ngFor="let cashbook of cashbooks" [value]="cashbook.cashbookId">{{ cashbook.name }}</option>
+          </select>
         </div>
       </div>
-      <table class="table table-striped">
-        <thead>
-          <tr>
-            <th>Payment ID</th>
-            <th>Kid</th>
-            <th>Amount</th>
-            <th>Payment Date</th>
-            <th>Status</th>
-            <th>Method</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let payment of payments.content">
-            <td>{{ payment.paymentId }}</td>
-            <td>{{ payment.kid.firstName }} {{ payment.kid.lastName }}</td>
-            <td>{{ payment.amount | currency }}</td>
-            <td>{{ payment.paymentDate }}</td>
-            <td>{{ payment.status }}</td>
-            <td>{{ payment.paymentMethod }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <nav>
-        <ul class="pagination">
-          <li class="page-item" [class.disabled]="pageable.pageNumber === 0">
-            <a class="page-link" (click)="changePage(pageable.pageNumber - 1)">Previous</a>
-          </li>
-          <li class="page-item" *ngFor="let page of pages" [class.active]="pageable.pageNumber === page">
-            <a class="page-link" (click)="changePage(page)">{{ page + 1 }}</a>
-          </li>
-          <li class="page-item" [class.disabled]="pageable.pageNumber === totalPages - 1">
-            <a class="page-link" (click)="changePage(pageable.pageNumber + 1)">Next</a>
-          </li>
-        </ul>
-      </nav>
+      <div class="row mt-3">
+        <div class="col-md-3">
+          <label for="paymentDate">Payment Date</label>
+          <input id="paymentDate" type="date" class="form-control" formControlName="paymentDate" required>
+        </div>
+        <div class="col-md-3">
+          <label for="bankingDate">Banking Date</label>
+          <input id="bankingDate" type="date" class="form-control" formControlName="bankingDate">
+        </div>
+        <div class="col-md-3">
+          <label for="transactionId">Transaction ID</label>
+          <input id="transactionId" type="text" class="form-control" formControlName="transactionId">
+        </div>
+        <div class="col-md-3 align-self-end">
+          <button type="submit" class="btn btn-primary w-100" [disabled]="paymentForm.invalid">Allocate Payment</button>
+        </div>
+      </div>
+    </form>
+
+    <h4 class="mt-4">Open Invoice Items</h4>
+    <p *ngIf="overpaymentBalance > 0">Overpayment Balance: {{ overpaymentBalance | currency:'KSH' }}</p>
+    <div [formGroup]="paymentForm">
+      <div formArrayName="allocations">
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th>Invoice Number</th>
+              <th>Invoice Date</th>
+              <th>Due Date</th>
+              <th>Description</th>
+              <th>Invoice Amount</th>
+              <th>Paid</th>
+              <th>Amount Due</th>
+              <th>Payment/Allocation</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let item of invoiceItems; let i = index" [formGroupName]="i">
+              <td>{{ item.invoiceNumber }}</td>
+              <td>{{ item.invoiceDate | date:'mediumDate' }}</td>
+              <td>{{ item.dueDate | date:'mediumDate' }}</td>
+              <td>{{ item.description }}</td>
+              <td>{{ item.invoiceItemAmount | currency:'KSH' }}</td>
+              <td>{{ item.paidAmount | currency:'KSH' }}</td>
+              <td>{{ item.amountDue | currency:'KSH' }}</td>
+              <td>
+                <input type="number" class="form-control" formControlName="allocatedAmount" (input)="updateBalance(i)"
+                  min="0" [max]="item.amountDue">
+              </td>
+              <td>{{ item.balance | currency:'KSH' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+  </div>
+
+  <div class="mb-3">
+    <h3>Filter Payments</h3>
+    <div class="row">
+      <div class="col-md-3">
+        <select class="form-control" [(ngModel)]="selectedKidId" (change)="onKidChange($event)">
+          <option value="">Select Kid</option>
+          <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadPayments()">
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadPayments()">
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Payment ID</th>
+        <th>Kid</th>
+        <th>Amount</th>
+        <th>Overpayment</th>
+        <th>Payment Date</th>
+        <th>Banking Date</th>
+        <th>Status</th>
+        <th>Method</th>
+        <th>Cashbook</th>
+        <th>Transaction ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let payment of payments.content">
+        <td>{{ payment.paymentId }}</td>
+        <td>{{ payment.kid.firstName }} {{ payment.kid.lastName }}</td>
+        <td>{{ payment.amount | currency:'KSH' }}</td>
+        <td>{{ payment.overpaymentAmount | currency:'KSH' }}</td>
+        <td>{{ payment.paymentDate | date:'medium' }}</td>
+        <td>{{ payment.bankingDate | date:'mediumDate' }}</td>
+        <td>{{ payment.status }}</td>
+        <td>{{ payment.paymentMethod }}</td>
+        <td>{{ payment.cashbook.name }}</td>
+        <td>{{ payment.transactionId }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <nav>
+    <ul class="pagination">
+      <li class="page-item" [class.disabled]="pageable.pageNumber === 0">
+        <a class="page-link" (click)="changePage(pageable.pageNumber - 1)">Previous</a>
+      </li>
+      <li class="page-item" *ngFor="let page of pages" [class.active]="pageable.pageNumber === page">
+        <a class="page-link" (click)="changePage(page)">{{ page + 1 }}</a>
+      </li>
+      <li class="page-item" [class.disabled]="pageable.pageNumber === totalPages - 1">
+        <a class="page-link" (click)="changePage(pageable.pageNumber + 1)">Next</a>
+      </li>
+    </ul>
+  </nav>
+</div>

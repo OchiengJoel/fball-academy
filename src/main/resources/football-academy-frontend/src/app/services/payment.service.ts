@@ -3,19 +3,31 @@ import { Injectable } from '@angular/core';
 import { Payment } from '../models/payment';
 import { Observable } from 'rxjs';
 import { Page } from '../models/page';
+import { InvoiceItemAllocationDTO } from '../models/invoice-item-allocation-dto';
+import { PaymentAllocationRequest } from '../models/payment-allocation-request';
 
 @Injectable({
   providedIn: 'root'
 })
-export class PaymentService {
 
+
+export class PaymentService {
+  
   private apiUrl = 'http://localhost:8082/api/payments';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-  // recordPayment(payment: Payment, invoiceId?: number): Observable<Payment> {
-  //   return this.http.post<Payment>(this.apiUrl, payment, { params: { invoiceId } });
-  // }
+  allocatePayment(request: PaymentAllocationRequest): Observable<Payment> {
+    return this.http.post<Payment>(`${this.apiUrl}/allocate`, request);
+  }
+
+  getOpenInvoiceItems(kidId: number): Observable<InvoiceItemAllocationDTO[]> {
+    return this.http.get<InvoiceItemAllocationDTO[]>(`${this.apiUrl}/open-invoice-items/${kidId}`);
+  }
+
+  getOverpaymentBalance(kidId: number): Observable<number> {
+    return this.http.get<number>(`${this.apiUrl}/overpayment-balance/${kidId}`);
+  }
 
   recordPayment(payment: Payment, invoiceId?: number): Observable<Payment> {
     const params: { [key: string]: string } = {};

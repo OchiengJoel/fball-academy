@@ -13,6 +13,7 @@ import { StatementsComponent } from './components/statements/statements/statemen
 import { UsersComponent } from './components/users/users/users.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ItemTypeManagementComponent } from './components/item-type-management/item-type-management.component';
+import { CashbooksComponent } from './components/cashbooks/cashbooks.component';
 
 const routes: Routes = [
 
@@ -23,6 +24,7 @@ const routes: Routes = [
   { path: 'fee-invoices', component: FeeInvoicesComponent, canActivate: [AuthGuard] },
   { path: 'item-types', component:ItemTypeManagementComponent, canActivate: [AuthGuard] },
   { path: 'payments', component: PaymentsComponent, canActivate: [AuthGuard] },
+  { path: 'cashbooks', component: CashbooksComponent, canActivate: [AuthGuard] },
   { path: 'progress', component: ProgressComponent, canActivate: [AuthGuard] },
   { path: 'statements', component: StatementsComponent, canActivate: [AuthGuard] },
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },

@@ -1,0 +1,83 @@
+<div class="container mt-4">
+  <h2>Cashbooks</h2>
+  <div class="mb-3">
+    <h3>Create Cashbook</h3>
+    <form [formGroup]="cashbookForm" (ngSubmit)="createCashbook()">
+      <div class="row">
+        <div class="col-md-3">
+          <input type="text" class="form-control" formControlName="name" placeholder="Cashbook Name" required>
+        </div>
+        <div class="col-md-3">
+          <input type="text" class="form-control" formControlName="description" placeholder="Description">
+        </div>
+        <div class="col-md-3 align-self-end">
+          <button type="submit" class="btn btn-primary w-100" [disabled]="cashbookForm.invalid">Create</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <h3>Cashbooks</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Description</th>
+        <th>Balance</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let cashbook of cashbooks">
+        <td>{{ cashbook.name }}</td>
+        <td>{{ cashbook.description }}</td>
+        <td>{{ cashbook.balance | currency:'KSH' }}</td>
+        <td>
+          <button class="btn btn-sm btn-primary me-2" (click)="updateCashbook(cashbook)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteCashbook(cashbook.cashbookId!)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="mb-3">
+    <h3>Transactions</h3>
+    <div class="row">
+      <div class="col-md-3">
+        <select class="form-control" [(ngModel)]="selectedCashbookId" (change)="loadTransactions()">
+          <option value="">Select Cashbook</option>
+          <option *ngFor="let cashbook of cashbooks" [value]="cashbook.cashbookId">{{ cashbook.name }}</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadTransactions()">
+      </div>
+      <div class="col-md-3">
+        <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadTransactions()">
+      </div>
+    </div>
+  </div>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Transaction ID</th>
+        <th>Amount</th>
+        <th>Type</th>
+        <th>Description</th>
+        <th>Date</th>
+        <th>Payment ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let transaction of transactions">
+        <td>{{ transaction.transactionId }}</td>
+        <td>{{ transaction.amount | currency:'KSH' }}</td>
+        <td>{{ transaction.type }}</td>
+        <td>{{ transaction.description }}</td>
+        <td>{{ transaction.transactionDate | date:'medium' }}</td>
+        <td>{{ transaction.paymentId || '-' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

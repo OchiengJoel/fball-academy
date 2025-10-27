@@ -40,6 +40,7 @@ import { FeeInvoiceFormDialogComponent } from './components/fee-invoice-form-dia
 import { BatchFeeInvoiceFormDialogComponent } from './components/batch-fee-invoice-form-dialog/batch-fee-invoice-form-dialog.component';
 import { StatusPipePipe } from './utils/status-pipe.pipe';
 import { ItemTypeManagementComponent } from './components/item-type-management/item-type-management.component';
+import { CashbooksComponent } from './components/cashbooks/cashbooks.component';
 
 @NgModule({
   declarations: [
@@ -64,6 +65,7 @@ import { ItemTypeManagementComponent } from './components/item-type-management/i
     BatchFeeInvoiceFormDialogComponent,
     StatusPipePipe,
     ItemTypeManagementComponent,
+    CashbooksComponent,
     
   ],
   imports: [

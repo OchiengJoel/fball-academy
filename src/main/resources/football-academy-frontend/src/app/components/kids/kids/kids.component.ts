@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject, OnInit, Optional, ViewChild } from '@angular/core';
 import { Kid, KidBalance } from 'src/app/models/kid';
 import { User } from 'src/app/models/user';
 import { KidService } from 'src/app/services/kid.service';
@@ -13,6 +13,8 @@ import { FeeInvoiceService } from 'src/app/services/fee-invoice.service';
 import { HttpClient } from '@angular/common/http';
 import { BillingScheduleService } from 'src/app/services/billing-schedule.service';
 import { ItemType } from '../../enums/item-type.enum';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-kids',
@@ -22,6 +24,7 @@ import { ItemType } from '../../enums/item-type.enum';
 export class KidsComponent implements OnInit {
 
   kids: Kid[] = [];
+  kid: Kid;
   addKidForm: FormGroup;
   searchForm: FormGroup;
   outstandingForm: FormGroup;
@@ -36,6 +39,9 @@ export class KidsComponent implements OnInit {
   recurrenceIntervals = ['DAILY', 'WEEKLY', 'MONTHLY', 'QUARTERLY', 'SEMI_ANNUALLY', 'ANNUALLY', 'ONE_TIME'];
   loading: boolean = false;
   error: string | null = null;
+  dataSource = new MatTableDataSource<Kid>([]);
+
+  @ViewChild(MatPaginator) paginator!: MatPaginator;
 
    constructor(
     private kidService: KidService,
@@ -44,7 +50,9 @@ export class KidsComponent implements OnInit {
     private feeInvoiceService: FeeInvoiceService,
     private dialog: MatDialog,
     private http: HttpClient,
-    private fb: FormBuilder
+    private fb: FormBuilder,
+   @Optional() @Inject(MAT_DIALOG_DATA) public data?: { kid: Kid }
+
   ) {
     this.addKidForm = this.fb.group({
       parentId: ['', [Validators.required]],
@@ -66,6 +74,8 @@ export class KidsComponent implements OnInit {
       parentId: [''],
       dueDateBefore: ['']
     });
+
+     this.kid = data?.kid || {} as Kid;
   }
 
   ngOnInit() {
@@ -86,6 +96,10 @@ export class KidsComponent implements OnInit {
       }
     });
   }
+
+  ngAfterViewInit() {
+        this.dataSource.paginator = this.paginator;
+    }
 
   get feeDetails(): FormArray {
     return this.addKidForm.get('feeDetails') as FormArray;
@@ -179,17 +193,24 @@ export class KidsComponent implements OnInit {
     });
   }
 
+  // loadBillingSchedules() {
+  //   this.loading = true;
+  //   this.billingScheduleService.getActiveBillingSchedules(new Date().toISOString().split('T')[0]).subscribe({
+  //     next: (schedules) => {
+  //       this.billingSchedules = schedules;
+  //       this.loading = false;
+  //     },
+  //     error: (err) => {
+  //       this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
+  //       this.loading = false;
+  //     }
+  //   });
+  // }
+
   loadBillingSchedules() {
-    this.loading = true;
-    this.billingScheduleService.getActiveBillingSchedules(new Date().toISOString().split('T')[0]).subscribe({
-      next: (schedules) => {
-        this.billingSchedules = schedules;
-        this.loading = false;
-      },
-      error: (err) => {
-        this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
-        this.loading = false;
-      }
+    this.billingScheduleService.getBillingSchedulesForKid(this.kid.kidId).subscribe({
+      next: (schedules) => (this.billingSchedules = schedules),
+      error: (err) => alert('Failed to load billing schedules: ' + (err.error || 'Unknown error'))
     });
   }
 

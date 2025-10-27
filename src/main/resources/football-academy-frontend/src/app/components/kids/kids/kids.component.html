@@ -1,7 +1,5 @@
 <div class="container-fluid mt-4">
   <h2>Kids Management</h2>
-  <div *ngIf="loading" class="alert alert-info">Loading...</div>
-  <div *ngIf="error" class="alert alert-danger">{{ error }}</div>
 
   <div *ngIf="isAdminOrSuperAdmin()" class="mb-3">
     <h3>Search Kids</h3>
@@ -71,7 +69,8 @@
         <h4>Fee Details</h4>
         <button type="button" class="btn btn-secondary mb-2" (click)="addFeeDetail()">Add Fee</button>
 
-        <div *ngFor="let feeDetail of feeDetails.controls; let i = index" class="row mb-2" [formGroup]="$any(feeDetail)">
+        <div *ngFor="let feeDetail of feeDetails.controls; let i = index" class="row mb-2"
+          [formGroup]="$any(feeDetail)">
           <div class="col-md-2">
             <input type="text" class="form-control" placeholder="Description" formControlName="description"
               [ngClass]="{'is-invalid': feeDetail.get('description')?.touched && feeDetail.get('description')?.invalid}">
@@ -163,6 +162,11 @@
       </tr>
     </tbody>
   </table>
+
+  <mat-paginator [pageSizeOptions]="[5, 40, 50, 100, 300, 500, 800]" showFirstLastButtons></mat-paginator>
+  <div *ngIf="dataSource.data.length === 0" class="alert alert-info mt-3">
+    No Kids found.
+  </div>
 
   <div *ngIf="isAdminOrSuperAdmin()" class="mb-3">
     <h3>Kids with Outstanding Balances</h3>
