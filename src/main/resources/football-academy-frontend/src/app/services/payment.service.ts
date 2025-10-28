@@ -17,6 +17,12 @@ export class PaymentService {
 
   constructor(private http: HttpClient) {}
 
+  getAllPayments(start: string, end: string, page: number, size: number): Observable<Page<Payment>> {
+    return this.http.get<Page<Payment>>(this.apiUrl, {
+      params: { start, end, page: page.toString(), size: size.toString() },
+    });
+  }
+
   allocatePayment(request: PaymentAllocationRequest): Observable<Payment> {
     return this.http.post<Payment>(`${this.apiUrl}/allocate`, request);
   }

@@ -1,5 +1,7 @@
 <div class="container mt-6">
   <h2>Payments</h2>
+  <div *ngIf="loading" class="alert alert-info">Loading payments...</div>
+
   <div *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" class="mb-3">
     <h3>Record Payment</h3>
     <form [formGroup]="paymentForm" (ngSubmit)="recordPayment()">
@@ -95,16 +97,19 @@
     <h3>Filter Payments</h3>
     <div class="row">
       <div class="col-md-3">
-        <select class="form-control" [(ngModel)]="selectedKidId" (change)="onKidChange($event)">
-          <option value="">Select Kid</option>
+        <label for="kidFilter">Kid</label>
+        <select id="kidFilter" class="form-control" [(ngModel)]="selectedKidId" (change)="onKidChange($event)">
+          <option value="">All Kids</option>
           <option *ngFor="let kid of kids" [value]="kid.kidId">{{ kid.firstName }} {{ kid.lastName }}</option>
         </select>
       </div>
       <div class="col-md-3">
-        <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadPayments()">
+        <label for="startDate">Start Date</label>
+        <input id="startDate" type="date" class="form-control" [(ngModel)]="startDate" (change)="loadPayments()">
       </div>
       <div class="col-md-3">
-        <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadPayments()">
+        <label for="endDate">End Date</label>
+        <input id="endDate" type="date" class="form-control" [(ngModel)]="endDate" (change)="loadPayments()">
       </div>
     </div>
   </div>

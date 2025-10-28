@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { CashbookDTO } from '../models/cashbook-dto';
 import { CashbookTransactionDTO } from '../models/cashbook-transaction-dto';
+import { Page } from '../models/page';
 
 @Injectable({
   providedIn: 'root'
@@ -32,9 +33,15 @@ export class CashbookService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
-  getCashbookTransactions(id: number, start: string, end: string): Observable<CashbookTransactionDTO[]> {
-    return this.http.get<CashbookTransactionDTO[]>(`${this.apiUrl}/${id}/transactions`, {
-      params: { start, end },
+  getCashbookTransactions(id: number, start: string, end: string, page: number, size: number): Observable<Page<CashbookTransactionDTO>> {
+    return this.http.get<Page<CashbookTransactionDTO>>(`${this.apiUrl}/${id}/transactions`, {
+      params: { start, end, page: page.toString(), size: size.toString() }
+    });
+  }
+
+  getAllCashbookTransactions(start: string, end: string, page: number, size: number): Observable<Page<CashbookTransactionDTO>> {
+    return this.http.get<Page<CashbookTransactionDTO>>(`${this.apiUrl}/transactions`, {
+      params: { start, end, page: page.toString(), size: size.toString() }
     });
   }
 }

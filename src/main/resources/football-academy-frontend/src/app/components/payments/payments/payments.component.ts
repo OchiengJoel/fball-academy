@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { CashbookDTO } from 'src/app/models/cashbook-dto';
@@ -12,6 +12,7 @@ import { CashbookService } from 'src/app/services/cashbook.service';
 import { KidService } from 'src/app/services/kid.service';
 import { PaymentService } from 'src/app/services/payment.service';
 import { UserService } from 'src/app/services/user.service';
+import { DateUtilsComponent } from 'src/app/utils/date-utils/date-utils.component';
 
 @Component({
   selector: 'app-payments',
@@ -19,7 +20,7 @@ import { UserService } from 'src/app/services/user.service';
   styleUrls: ['./payments.component.css']
 })
 export class PaymentsComponent implements OnInit {
-  payments: Page<Payment> = { content: [], pageable: { pageNumber: 0, pageSize: 10 }, totalElements: 0, totalPages: 0 };
+  payments: Page<Payment> = { content: [], pageable: { pageNumber: 0, pageSize: 50 }, totalElements: 0, totalPages: 0 };
   kids: Kid[] = [];
   cashbooks: CashbookDTO[] = [];
   user: User | null = null;
@@ -42,7 +43,8 @@ export class PaymentsComponent implements OnInit {
     private cashbookService: CashbookService,
     private userService: UserService,
     private fb: FormBuilder,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private cdr: ChangeDetectorRef
   ) {
     this.paymentForm = this.fb.group({
       kidId: ['', Validators.required],
@@ -61,6 +63,10 @@ export class PaymentsComponent implements OnInit {
       next: (user) => {
         this.user = user;
         this.loadInitialData();
+        // Load all payments by default if user is ADMIN or SUPER_ADMIN
+        if (this.isAdminOrSuperAdmin()) {
+          this.loadPayments();
+        }
       }
     });
   }
@@ -74,12 +80,6 @@ export class PaymentsComponent implements OnInit {
   isAdminOrSuperAdmin(): boolean {
     return this.user?.role === 'ADMIN' || this.user?.role === 'SUPER_ADMIN';
   }
-
-  // private loadKids() {
-  //   this.kidService.getKidsByParent(this.user!.userId).subscribe({
-  //     next: (kids) => (this.kids = kids)
-  //   });
-  // }
 
   private loadKids() {
     this.loading = true;
@@ -122,18 +122,26 @@ export class PaymentsComponent implements OnInit {
     });
   }
 
+  // private setDefaultDates() {
+  //   const today = new Date();
+  //   const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
+  //   this.startDate = oneMonthAgo.toISOString().split('T')[0];
+  //   this.endDate = today.toISOString().split('T')[0];
+  //   this.paymentForm.patchValue({ paymentDate: today.toISOString().split('T')[0] });
+  // }
+
   private setDefaultDates() {
-    const today = new Date();
-    const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-    this.startDate = oneMonthAgo.toISOString().split('T')[0];
-    this.endDate = today.toISOString().split('T')[0];
-    this.paymentForm.patchValue({ paymentDate: today.toISOString().split('T')[0] });
-  }
+  const { startDate, endDate } = DateUtilsComponent.getDefaultDateRange();
+  this.startDate = startDate;
+  this.endDate = endDate;
+  this.paymentForm.patchValue({ paymentDate: endDate });
+}
 
   loadOpenInvoiceItems() {
     if (this.selectedKidId) {
       this.paymentService.getOpenInvoiceItems(this.selectedKidId).subscribe({
         next: (items) => {
+          console.log('Received invoice items:', items);
           this.invoiceItems = items;
           const allocations = this.paymentForm.get('allocations') as FormArray;
           allocations.clear();
@@ -142,13 +150,20 @@ export class PaymentsComponent implements OnInit {
               invoiceItemId: [item.invoiceItemId, Validators.required],
               allocatedAmount: [0, [Validators.min(0), Validators.max(item.amountDue)]]
             }));
-            item.balance = item.amountDue; // Initialize balance
+            item.balance = item.amountDue;
           });
+          console.log('Allocations FormArray length:', allocations.length);
+          this.cdr.detectChanges();
         }
       });
       this.paymentService.getOverpaymentBalance(this.selectedKidId).subscribe({
         next: (balance) => (this.overpaymentBalance = balance)
       });
+    } else {
+      this.invoiceItems = [];
+      const allocations = this.paymentForm.get('allocations') as FormArray;
+      allocations.clear();
+      this.cdr.detectChanges();
     }
   }
 
@@ -186,14 +201,37 @@ export class PaymentsComponent implements OnInit {
   }
 
   loadPayments() {
-    if (this.selectedKidId && this.startDate && this.endDate) {
-      const start = `${this.startDate}T00:00:00`;
-      const end = `${this.endDate}T23:59:59`;
+    const start = `${this.startDate}T00:00:00`;
+    const end = `${this.endDate}T23:59:59`;
+    this.loading = true;
+    if (this.selectedKidId) {
       this.paymentService.getPaymentsForKid(this.selectedKidId, start, end, this.pageable.pageNumber, this.pageable.pageSize).subscribe({
         next: (page) => {
           this.payments = page;
           this.totalPages = page.totalPages;
           this.pages = Array.from({ length: page.totalPages }, (_, i) => i);
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.error = 'Failed to load payments: ' + (err.error?.message || 'Unknown error');
+          this.toastr.error(this.error, 'Error');
+          this.loading = false;
+        }
+      });
+    } else {
+      this.paymentService.getAllPayments(start, end, this.pageable.pageNumber, this.pageable.pageSize).subscribe({
+        next: (page) => {
+          this.payments = page;
+          this.totalPages = page.totalPages;
+          this.pages = Array.from({ length: page.totalPages }, (_, i) => i);
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.error = 'Failed to load payments: ' + (err.error?.message || 'Unknown error');
+          this.toastr.error(this.error, 'Error');
+          this.loading = false;
         }
       });
     }
@@ -214,5 +252,6 @@ export class PaymentsComponent implements OnInit {
     const selectElement = event.target as HTMLSelectElement;
     this.selectedKidId = selectElement.value ? Number(selectElement.value) : null;
     this.loadOpenInvoiceItems();
+    this.loadPayments();
   }
 }

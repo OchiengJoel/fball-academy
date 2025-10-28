@@ -1,14 +1,18 @@
 <div class="container mt-4">
   <h2>Cashbooks</h2>
+  <div *ngIf="loading" class="alert alert-info">Loading transactions...</div>
+
   <div class="mb-3">
     <h3>Create Cashbook</h3>
     <form [formGroup]="cashbookForm" (ngSubmit)="createCashbook()">
       <div class="row">
         <div class="col-md-3">
-          <input type="text" class="form-control" formControlName="name" placeholder="Cashbook Name" required>
+          <label for="name">Name</label>
+          <input id="name" type="text" class="form-control" formControlName="name" placeholder="Cashbook Name" required>
         </div>
         <div class="col-md-3">
-          <input type="text" class="form-control" formControlName="description" placeholder="Description">
+          <label for="description">Description</label>
+          <input id="description" type="text" class="form-control" formControlName="description" placeholder="Description">
         </div>
         <div class="col-md-3 align-self-end">
           <button type="submit" class="btn btn-primary w-100" [disabled]="cashbookForm.invalid">Create</button>
@@ -41,19 +45,22 @@
   </table>
 
   <div class="mb-3">
-    <h3>Transactions</h3>
+    <h3>Filter Transactions</h3>
     <div class="row">
       <div class="col-md-3">
-        <select class="form-control" [(ngModel)]="selectedCashbookId" (change)="loadTransactions()">
-          <option value="">Select Cashbook</option>
+        <label for="cashbookFilter">Cashbook</label>
+        <select id="cashbookFilter" class="form-control" [(ngModel)]="selectedCashbookId" (change)="onCashbookChange($event)">
+          <option value="">All Cashbooks</option>
           <option *ngFor="let cashbook of cashbooks" [value]="cashbook.cashbookId">{{ cashbook.name }}</option>
         </select>
       </div>
       <div class="col-md-3">
-        <input type="date" class="form-control" [(ngModel)]="startDate" (change)="loadTransactions()">
+        <label for="startDate">Start Date</label>
+        <input id="startDate" type="date" class="form-control" [(ngModel)]="startDate" (change)="loadTransactions()">
       </div>
       <div class="col-md-3">
-        <input type="date" class="form-control" [(ngModel)]="endDate" (change)="loadTransactions()">
+        <label for="endDate">End Date</label>
+        <input id="endDate" type="date" class="form-control" [(ngModel)]="endDate" (change)="loadTransactions()">
       </div>
     </div>
   </div>
@@ -70,7 +77,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let transaction of transactions">
+      <tr *ngFor="let transaction of transactions.content">
         <td>{{ transaction.transactionId }}</td>
         <td>{{ transaction.amount | currency:'KSH' }}</td>
         <td>{{ transaction.type }}</td>
@@ -80,4 +87,18 @@
       </tr>
     </tbody>
   </table>
+
+  <nav>
+    <ul class="pagination">
+      <li class="page-item" [class.disabled]="pageable.pageNumber === 0">
+        <a class="page-link" (click)="changePage(pageable.pageNumber - 1)">Previous</a>
+      </li>
+      <li class="page-item" *ngFor="let page of pages" [class.active]="pageable.pageNumber === page">
+        <a class="page-link" (click)="changePage(page)">{{ page + 1 }}</a>
+      </li>
+      <li class="page-item" [class.disabled]="pageable.pageNumber === totalPages - 1">
+        <a class="page-link" (click)="changePage(pageable.pageNumber + 1)">Next</a>
+      </li>
+    </ul>
+  </nav>
 </div>
