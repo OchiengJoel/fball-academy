@@ -48,4 +48,16 @@ export class PaymentService {
       params: { start, end, page: page.toString(), size: size.toString() },
     });
   }
+
+  deletePayment(paymentId: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${paymentId}`);
+  }
+
+  reversePayment(paymentId: number): Observable<Payment> {
+    return this.http.post<Payment>(`${this.apiUrl}/${paymentId}/reverse`, {});
+  }
+
+  undoReversePayment(paymentId: number): Observable<Payment> {
+    return this.http.post<Payment>(`${this.apiUrl}/${paymentId}/undo-reverse`, {});
+  }
 }

@@ -127,6 +127,7 @@
         <th>Method</th>
         <th>Cashbook</th>
         <th>Transaction ID</th>
+        <th *ngIf="isAdminOrSuperAdmin()">Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -141,6 +142,14 @@
         <td>{{ payment.paymentMethod }}</td>
         <td>{{ payment.cashbook.name }}</td>
         <td>{{ payment.transactionId }}</td>
+        <td *ngIf="isAdminOrSuperAdmin()">
+          <button class="btn btn-sm btn-danger me-2" (click)="deletePayment(payment.paymentId)"
+                  [disabled]="payment.status === 'FAILED'">Delete</button>
+          <button class="btn btn-sm btn-warning me-2" (click)="reversePayment(payment.paymentId)"
+                  [disabled]="payment.status === 'FAILED'">Reverse</button>
+          <button class="btn btn-sm btn-success" (click)="undoReversePayment(payment.paymentId)"
+                  [disabled]="payment.status !== 'FAILED'">Undo Reverse</button>
+        </td>
       </tr>
     </tbody>
   </table>

@@ -120,15 +120,7 @@ export class PaymentsComponent implements OnInit {
     this.cashbookService.getAllCashbooks().subscribe({
       next: (cashbooks) => (this.cashbooks = cashbooks)
     });
-  }
-
-  // private setDefaultDates() {
-  //   const today = new Date();
-  //   const oneMonthAgo = new Date(today.getFullYear(), today.getMonth() - 1, today.getDate());
-  //   this.startDate = oneMonthAgo.toISOString().split('T')[0];
-  //   this.endDate = today.toISOString().split('T')[0];
-  //   this.paymentForm.patchValue({ paymentDate: today.toISOString().split('T')[0] });
-  // }
+  } 
 
   private setDefaultDates() {
   const { startDate, endDate } = DateUtilsComponent.getDefaultDateRange();
@@ -253,5 +245,56 @@ export class PaymentsComponent implements OnInit {
     this.selectedKidId = selectElement.value ? Number(selectElement.value) : null;
     this.loadOpenInvoiceItems();
     this.loadPayments();
+  }
+
+  deletePayment(paymentId: number) {
+    if (confirm('Are you sure you want to delete this payment? This action cannot be undone.')) {
+      this.paymentService.deletePayment(paymentId).subscribe({
+        next: () => {
+          this.toastr.success('Payment deleted successfully!', 'Success');
+          this.loadPayments();
+          this.loadOpenInvoiceItems();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.error = 'Failed to delete payment: ' + (err.error?.message || 'Unknown error');
+          this.toastr.error(this.error, 'Error');
+        }
+      });
+    }
+  }
+
+  reversePayment(paymentId: number) {
+    if (confirm('Are you sure you want to reverse this payment? This will create a contra-entry and mark the payment as FAILED.')) {
+      this.paymentService.reversePayment(paymentId).subscribe({
+        next: () => {
+          this.toastr.success('Payment reversed successfully!', 'Success');
+          this.loadPayments();
+          this.loadOpenInvoiceItems();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.error = 'Failed to reverse payment: ' + (err.error?.message || 'Unknown error');
+          this.toastr.error(this.error, 'Error');
+        }
+      });
+    }
+  }
+
+  undoReversePayment(paymentId: number) {
+    if (confirm('Are you sure you want to undo the reversal of this payment? This will restore the payment and its allocations.')) {
+      this.paymentService.undoReversePayment(paymentId).subscribe({
+        next: () => {
+          this.toastr.success('Payment reversal undone successfully!', 'Success');
+          this.loadPayments();
+          this.loadOpenInvoiceItems();
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          this.error = 'Failed to undo payment reversal: ' + (err.error?.message || 'Unknown error');
+          this.toastr.error(this.error, 'Error');
+        }
+      });
+    }
   }
 }
