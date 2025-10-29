@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { AbstractControl, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -7,7 +7,7 @@ import { ToastrService } from 'ngx-toastr';
 import { BillingSchedule } from 'src/app/models/billing-schedule';
 import { FeeInvoice } from 'src/app/models/fee-invoice';
 import { FeeSchedule } from 'src/app/models/fee-schedule';
-import { Kid, KidBalance } from 'src/app/models/kid';
+import { Kid } from 'src/app/models/kid';
 import { PaginatedResponse } from 'src/app/models/page';
 import { User } from 'src/app/models/user';
 import { BillingScheduleService } from 'src/app/services/billing-schedule.service';
@@ -20,6 +20,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { FeeInvoiceFormDialogComponent } from '../../fee-invoice-form-dialog/fee-invoice-form-dialog.component';
 import { BatchFeeInvoiceFormDialogComponent } from '../../batch-fee-invoice-form-dialog/batch-fee-invoice-form-dialog.component';
+import { KidOutstandingBalance } from 'src/app/models/kid-outstanding-balance';
+import { PaymentService } from 'src/app/services/payment.service';
 
 @Component({
   selector: 'app-fee-invoices',
@@ -32,7 +34,7 @@ export class FeeInvoicesComponent implements OnInit {
   financialReport: { [key in keyof typeof ItemType]: number } | null = null;
   dataSource = new MatTableDataSource<FeeInvoice>([]);
   kids: Kid[] = [];
-  kidBalances: KidBalance[] = [];
+  kidBalances: KidOutstandingBalance[] = [];
   user: User | null = null;
   filterForm: FormGroup;
   balance: number = 0;
@@ -46,11 +48,13 @@ export class FeeInvoicesComponent implements OnInit {
 
   constructor(
     private feeInvoiceService: FeeInvoiceService,
+    private paymentService: PaymentService,
     private kidService: KidService,
     private userService: UserService,
     private fb: FormBuilder,
     private toastr: ToastrService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private cdr : ChangeDetectorRef
   ) {
     this.filterForm = this.fb.group({
       selectedKidId: [''],
@@ -230,26 +234,23 @@ export class FeeInvoicesComponent implements OnInit {
     } else {
       this.loadAllInvoices();
     }
-  }
+  }  
 
-  loadAllKidBalances() {
-    if (this.filterForm.valid && this.user) {
-      this.loading = true;
-      this.error = null;
-      this.feeInvoiceService.getOutstandingBalancesForUser(this.filterForm.value.startDate, this.filterForm.value.endDate).subscribe({
-        next: (balances) => {
-          this.kidBalances = balances;
-          this.loading = false;
-        },
-        error: (err) => {
-          this.error = 'Failed to load kid balances: ' + (err.error?.message || 'Unknown error');
-          this.toastr.error(this.error, 'Error');
-          this.loading = false;
-        }
-      });
-    } else {
-      this.toastr.warning('Please select valid start and end dates.', 'Warning');
-    }
+  loadOutstandingBalances(): void {
+    console.log('Fetching outstanding balances');
+    this.paymentService.getOutstandingBalances().subscribe({
+      next: (response) => {
+        console.log('Outstanding balances loaded:', response);
+        this.kidBalances = response;
+        this.toastr.success('Outstanding balances loaded successfully', 'Success');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load outstanding balances:', err);
+        this.error = 'Failed to load outstanding balances: ' + (err.error?.message || 'Unknown error');
+        this.toastr.error(this.error, 'Error');
+      }
+    });
   }
 
   deleteInvoice(invoiceId: number) {

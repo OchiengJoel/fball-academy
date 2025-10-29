@@ -11,10 +11,11 @@ export interface Kid {
   status: 'ACTIVE' | 'INACTIVE' | 'SUSPENDED';
   createdAt: string;
   updatedAt: string;
+  outstandingBalance?: number;
 }
 
-export interface KidBalance {
-  kidId: number;
-  kidName: string;
-  outstandingBalance: number;
-}
+// export interface KidBalance {
+//   kidId: number;
+//   kidName: string;
+//   outstandingBalance: number;
+// }

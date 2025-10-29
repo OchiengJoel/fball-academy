@@ -134,6 +134,7 @@
         <th>Code</th>
         <th>Name</th>
         <th>Date of Birth</th>
+        <th>Outstanding Balance</th>
         <th>Status</th>
         <th>Actions</th>
       </tr>
@@ -143,6 +144,7 @@
         <td>{{ kid.code }}</td>
         <td>{{ kid.firstName }} {{ kid.lastName }}</td>
         <td>{{ kid.dateOfBirth | date }}</td>
+         <td>{{ kid.outstandingBalance !== undefined ? (kid.outstandingBalance | currency) : '0.00' | currency }}</td>
         <td>
           <select *ngIf="isAdminOrSuperAdmin()" [(ngModel)]="kid.status" (change)="updateStatus(kid)"
             [ngModelOptions]="{standalone: true}">

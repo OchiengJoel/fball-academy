@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, Inject, OnInit, Optional, ViewChild } from '@angular/core';
-import { Kid, KidBalance } from 'src/app/models/kid';
+import { Kid } from 'src/app/models/kid';
 import { User } from 'src/app/models/user';
 import { KidService } from 'src/app/services/kid.service';
 import { UserService } from 'src/app/services/user.service';
@@ -91,9 +91,10 @@ export class KidsComponent implements OnInit {
       next: (user) => {
         this.user = user;
         this.loadKids();
+        this.loadBalancesForKids();
         if (this.isAdminOrSuperAdmin()) {
-          this.loadBillingSchedules();
           this.loadParents();
+          this.loadOutstandingBalances();
         }
         this.loading = false;
       },
@@ -196,6 +197,25 @@ export class KidsComponent implements OnInit {
       error: (err) => {
         this.error = 'Failed to load parents: ' + (err.error?.message || 'Unknown error');
         this.loading = false;
+      }
+    });
+  }
+
+  loadBalancesForKids(): void {
+    this.paymentService.getOutstandingBalances().subscribe({
+      next: (balances) => {
+        this.balances = balances;
+        this.kids = this.kids.map(kid => ({
+          ...kid,
+          outstandingBalance: balances.find(b => b.kidId === kid.kidId)?.outstandingBalance ?? 0
+        }));
+        this.dataSource.data = this.kids;
+        this.toastr.success('Outstanding balances loaded successfully', 'Success');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        this.toastr.error('Failed to load outstanding balances: ' + (err.error?.message || 'Unknown error'), 'Error');
+        this.cdr.detectChanges();
       }
     });
   }

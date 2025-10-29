@@ -2,11 +2,12 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { FeeInvoice } from '../models/fee-invoice';
 import { catchError, Observable, throwError } from 'rxjs';
-import { KidBalance } from '../models/kid';
+
 import { PaginatedResponse } from '../models/page';
 import { ItemType } from '../components/enums/item-type.enum';
 import { InvoiceItemRequest } from '../models/invoice-item-request';
 import { ManualInvoiceRequest } from '../models/manual-invoice-request';
+import { KidOutstandingBalance } from '../models/kid-outstanding-balance';
 
 
 @Injectable({
@@ -57,9 +58,9 @@ export class FeeInvoiceService {
       .pipe(catchError(this.handleError));
   }
 
-  getOutstandingBalancesForUser(start: string, end: string): Observable<KidBalance[]> {
+  getOutstandingBalancesForUser(start: string, end: string): Observable<KidOutstandingBalance[]> {
     return this.http
-      .get<KidBalance[]>(`${this.apiUrl}/balances/user`, { params: { start, end } })
+      .get<KidOutstandingBalance[]>(`${this.apiUrl}/balances/user`, { params: { start, end } })
       .pipe(catchError(this.handleError));
   }
 

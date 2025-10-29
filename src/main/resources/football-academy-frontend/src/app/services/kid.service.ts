@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { KidRequest } from '../models/kid-request';
-import { Kid, KidBalance } from '../models/kid';
+import { Kid } from '../models/kid';
 
 @Injectable({
   providedIn: 'root'

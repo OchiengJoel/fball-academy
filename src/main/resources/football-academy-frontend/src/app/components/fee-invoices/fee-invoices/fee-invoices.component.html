@@ -150,7 +150,7 @@
       <h3 class="card-title">Kid Balances</h3>
     </div>
     <div class="card-body">
-      <button class="btn btn-secondary mb-3" (click)="loadAllKidBalances()" [disabled]="filterForm.invalid || loading">
+      <button class="btn btn-secondary mb-3" (click)="loadOutstandingBalances()" [disabled]="filterForm.invalid || loading">
         Load All Kid Balances
       </button>
       <table class="table table-striped table-hover" *ngIf="kidBalances.length > 0">

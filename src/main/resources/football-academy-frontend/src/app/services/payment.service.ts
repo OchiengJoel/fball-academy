@@ -6,6 +6,7 @@ import { Page } from '../models/page';
 import { InvoiceItemAllocationDTO } from '../models/invoice-item-allocation-dto';
 import { PaymentAllocationRequest } from '../models/payment-allocation-request';
 import { KidOutstandingBalance } from '../models/kid-outstanding-balance';
+import { DateUtilsComponent } from '../utils/date-utils/date-utils.component';
 
 @Injectable({
   providedIn: 'root'
@@ -65,4 +66,11 @@ export class PaymentService {
   getOutstandingBalances(): Observable<KidOutstandingBalance[]> {
     return this.http.get<KidOutstandingBalance[]>(`${this.apiUrl}/outstanding-balances`);
   }
+
+  // getOutstandingBalances(): Observable<KidOutstandingBalance[]> {
+  //   const { startDate, endDate } = DateUtilsComponent.getDefaultDateRange();
+  //   return this.http.get<KidOutstandingBalance[]>(`${this.apiUrl}/outstanding-balances`, {
+  //     params: { start: startDate, end: endDate }
+  //   });
+  // }
 }
