@@ -14,6 +14,7 @@ import { UsersComponent } from './components/users/users/users.component';
 import { AuthGuard } from './guards/auth.guard';
 import { ItemTypeManagementComponent } from './components/item-type-management/item-type-management.component';
 import { CashbooksComponent } from './components/cashbooks/cashbooks.component';
+import { OutstandingBalancesComponent } from './components/outstanding-balances/outstanding-balances.component';
 
 const routes: Routes = [
 
@@ -28,7 +29,7 @@ const routes: Routes = [
   { path: 'progress', component: ProgressComponent, canActivate: [AuthGuard] },
   { path: 'statements', component: StatementsComponent, canActivate: [AuthGuard] },
   { path: 'notifications', component: NotificationsComponent, canActivate: [AuthGuard] },
-  { path: 'fee-schedules', component: FeeSchedulesComponent, canActivate: [AuthGuard] },
+  { path: 'kids-outstanding-balances', component: OutstandingBalancesComponent, canActivate: [AuthGuard] },
   { path: 'users', component: UsersComponent, canActivate: [AuthGuard] },
   { path: '', redirectTo: '/login', pathMatch: 'full' },
 

@@ -1,0 +1,29 @@
+ <div class="container">
+      <h2>Kids Outstanding Balances</h2>
+      <table class="table table-striped">
+        <thead>
+          <tr>
+            <th>Kid ID</th>
+            <th>Name</th>
+            <th>Total Outstanding</th>
+            <th>0-30 Days</th>
+            <th>31-60 Days</th>
+            <th>61-90 Days</th>
+            <th>91-120 Days</th>
+            <th>120+ Days</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let balance of balances">
+            <td>{{ balance.kidId }}</td>
+            <td>{{ balance.kidName }}</td>
+            <td>{{ balance.outstandingBalance | currency }}</td>
+            <td>{{ balance.within30Days | currency }}</td>
+            <td>{{ balance.within60Days | currency }}</td>
+            <td>{{ balance.within90Days | currency }}</td>
+            <td>{{ balance.within120Days | currency }}</td>
+            <td>{{ balance.over120Days | currency }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>

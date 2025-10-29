@@ -42,6 +42,7 @@ import { StatusPipePipe } from './utils/status-pipe.pipe';
 import { ItemTypeManagementComponent } from './components/item-type-management/item-type-management.component';
 import { CashbooksComponent } from './components/cashbooks/cashbooks.component';
 import { DateUtilsComponent } from './utils/date-utils/date-utils.component';
+import { OutstandingBalancesComponent } from './components/outstanding-balances/outstanding-balances.component';
 
 @NgModule({
   declarations: [
@@ -68,6 +69,7 @@ import { DateUtilsComponent } from './utils/date-utils/date-utils.component';
     ItemTypeManagementComponent,
     CashbooksComponent,
     DateUtilsComponent,
+    OutstandingBalancesComponent,
     
   ],
   imports: [

@@ -56,7 +56,4 @@ export class KidService {
     return this.http.delete<void>(`${this.apiUrl}/${kidId}`);
   }
 
-  getKidsWithOutstandingBalances(criteria: { parentId?: number; dueDateBefore?: string }): Observable<KidBalance[]> {
-    return this.http.get<KidBalance[]>(`${this.apiUrl}/outstanding`, { params: criteria });
-  }
 }

@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { Page } from '../models/page';
 import { InvoiceItemAllocationDTO } from '../models/invoice-item-allocation-dto';
 import { PaymentAllocationRequest } from '../models/payment-allocation-request';
+import { KidOutstandingBalance } from '../models/kid-outstanding-balance';
 
 @Injectable({
   providedIn: 'root'
@@ -59,5 +60,9 @@ export class PaymentService {
 
   undoReversePayment(paymentId: number): Observable<Payment> {
     return this.http.post<Payment>(`${this.apiUrl}/${paymentId}/undo-reverse`, {});
+  }
+
+  getOutstandingBalances(): Observable<KidOutstandingBalance[]> {
+    return this.http.get<KidOutstandingBalance[]>(`${this.apiUrl}/outstanding-balances`);
   }
 }

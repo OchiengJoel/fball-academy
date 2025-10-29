@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit, Optional, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, Inject, OnInit, Optional, ViewChild } from '@angular/core';
 import { Kid, KidBalance } from 'src/app/models/kid';
 import { User } from 'src/app/models/user';
 import { KidService } from 'src/app/services/kid.service';
@@ -15,6 +15,9 @@ import { BillingScheduleService } from 'src/app/services/billing-schedule.servic
 import { ItemType } from '../../enums/item-type.enum';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatTableDataSource } from '@angular/material/table';
+import { PaymentService } from 'src/app/services/payment.service';
+import { KidOutstandingBalance } from 'src/app/models/kid-outstanding-balance';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-kids',
@@ -27,8 +30,6 @@ export class KidsComponent implements OnInit {
   kid: Kid;
   addKidForm: FormGroup;
   searchForm: FormGroup;
-  outstandingForm: FormGroup;
-  kidBalances: KidBalance[] = [];
   billingSchedules: BillingSchedule[] = [];
   parents: User[] = [];
   recentInvoices: FeeInvoice[] = [];
@@ -40,18 +41,24 @@ export class KidsComponent implements OnInit {
   loading: boolean = false;
   error: string | null = null;
   dataSource = new MatTableDataSource<Kid>([]);
+  balances: KidOutstandingBalance[] = [];
+  outstandingForm: FormGroup;
+
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-   constructor(
+  constructor(
     private kidService: KidService,
     private userService: UserService,
     private billingScheduleService: BillingScheduleService,
     private feeInvoiceService: FeeInvoiceService,
+    private paymentService: PaymentService,
     private dialog: MatDialog,
     private http: HttpClient,
     private fb: FormBuilder,
-   @Optional() @Inject(MAT_DIALOG_DATA) public data?: { kid: Kid }
+    private cdr: ChangeDetectorRef,
+    private toastr: ToastrService,
+    @Optional() @Inject(MAT_DIALOG_DATA) public data?: { kid: Kid }
 
   ) {
     this.addKidForm = this.fb.group({
@@ -75,7 +82,7 @@ export class KidsComponent implements OnInit {
       dueDateBefore: ['']
     });
 
-     this.kid = data?.kid || {} as Kid;
+    this.kid = data?.kid || {} as Kid;
   }
 
   ngOnInit() {
@@ -98,8 +105,8 @@ export class KidsComponent implements OnInit {
   }
 
   ngAfterViewInit() {
-        this.dataSource.paginator = this.paginator;
-    }
+    this.dataSource.paginator = this.paginator;
+  }
 
   get feeDetails(): FormArray {
     return this.addKidForm.get('feeDetails') as FormArray;
@@ -116,7 +123,7 @@ export class KidsComponent implements OnInit {
       dueDate: ['']
     });
 
-     feeDetailForm.get('chargeType')?.valueChanges.subscribe(value => {
+    feeDetailForm.get('chargeType')?.valueChanges.subscribe(value => {
       if (value === 'ONE_OFF') {
         feeDetailForm.get('recurrenceInterval')?.setValue('ONE_TIME');
         feeDetailForm.get('prorate')?.setValue(false);
@@ -193,20 +200,6 @@ export class KidsComponent implements OnInit {
     });
   }
 
-  // loadBillingSchedules() {
-  //   this.loading = true;
-  //   this.billingScheduleService.getActiveBillingSchedules(new Date().toISOString().split('T')[0]).subscribe({
-  //     next: (schedules) => {
-  //       this.billingSchedules = schedules;
-  //       this.loading = false;
-  //     },
-  //     error: (err) => {
-  //       this.error = 'Failed to load billing schedules: ' + (err.error?.message || 'Unknown error');
-  //       this.loading = false;
-  //     }
-  //   });
-  // }
-
   loadBillingSchedules() {
     this.billingScheduleService.getBillingSchedulesForKid(this.kid.kidId).subscribe({
       next: (schedules) => (this.billingSchedules = schedules),
@@ -214,7 +207,7 @@ export class KidsComponent implements OnInit {
     });
   }
 
-   searchKids() {
+  searchKids() {
     if (this.isAdminOrSuperAdmin()) {
       this.loading = true;
       this.kidService.searchKids(this.searchForm.value).subscribe({
@@ -335,7 +328,7 @@ export class KidsComponent implements OnInit {
     }
   }
 
-   openDetailsDialog(kid: Kid) {
+  openDetailsDialog(kid: Kid) {
     const dialogRef = this.dialog.open(KidDetailsDialogComponent, {
       width: '90vw',
       maxWidth: '90vw',
@@ -348,19 +341,21 @@ export class KidsComponent implements OnInit {
     });
   }
 
-  loadOutstandingBalances() {
-    if (this.isAdminOrSuperAdmin()) {
-      this.loading = true;
-      this.kidService.getKidsWithOutstandingBalances(this.outstandingForm.value).subscribe({
-        next: (kidBalances) => {
-          this.kidBalances = kidBalances;
-          this.loading = false;
-        },
-        error: (err) => {
-          this.error = 'Failed to load outstanding balances: ' + (err.error?.message || 'Unknown error');
-          this.loading = false;
-        }
-      });
-    }
+  loadOutstandingBalances(): void {
+    console.log('Fetching outstanding balances');
+    this.paymentService.getOutstandingBalances().subscribe({
+      next: (response) => {
+        console.log('Outstanding balances loaded:', response);
+        this.balances = response;
+        this.toastr.success('Outstanding balances loaded successfully', 'Success');
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to load outstanding balances:', err);
+        this.error = 'Failed to load outstanding balances: ' + (err.error?.message || 'Unknown error');
+        this.toastr.error(this.error, 'Error');
+      }
+    });
   }
+
 }

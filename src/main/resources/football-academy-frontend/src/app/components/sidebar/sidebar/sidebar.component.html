@@ -10,7 +10,7 @@
     <a class="nav-link text-white" routerLink="/payments" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Payments</a>
     <a class="nav-link text-white" routerLink="/progress" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Progress</a>
     <a class="nav-link text-white" routerLink="/statements" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Statements</a>
-    <a class="nav-link text-white" routerLink="/fee-schedules" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Fee Schedules</a>
+    <a class="nav-link text-white" routerLink="/kids-outstanding-balances" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Balances</a>
     <a class="nav-link text-white" routerLink="/notifications" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Notifications</a>
     <a class="nav-link text-white" routerLink="/cashbooks" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Cashbooks</a>
     <a class="nav-link text-white" routerLink="/users" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Users</a>

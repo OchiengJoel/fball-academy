@@ -1,0 +1,71 @@
+.container {
+  max-width: 1500px;
+}
+
+.card {
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+}
+
+.mat-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.mat-header-cell, .mat-cell {
+  padding: 8px;
+  vertical-align: middle;
+}
+
+.mat-row:hover {
+  background-color: #f1f1f1;
+}
+
+.alert {
+  border-radius: 4px;
+}
+
+.btn-primary, .btn-secondary {
+  border-radius: 4px;
+  padding: 8px 16px;
+}
+
+.badge {
+  font-size: 0.9em;
+  padding: 6px 12px;
+}
+
+.form-label {
+  font-weight: 500;
+}
+
+.form-select, .form-control {
+  border-radius: 4px;
+}
+
+.mat-elevation-z2 {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.mat-paginator {
+  margin-top: 16px;
+}
+
+.form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.badge.bg-secondary {
+  font-size: 0.7em;
+}
+
+.optgroup-label {
+  font-weight: bold;
+  color: #6c757d;
+}

@@ -182,7 +182,7 @@
       </div>
       <button type="submit" class="btn btn-primary mt-2" [disabled]="loading">Load Outstanding Balances</button>
     </form>
-    <table *ngIf="kidBalances.length > 0" class="table table-striped">
+    <table *ngIf="balances.length > 0" class="table table-striped">
       <thead>
         <tr>
           <th>Kid ID</th>
@@ -191,10 +191,10 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let kb of kidBalances">
-          <td>{{ kb.kidId }}</td>
-          <td>{{ kb.kidName }}</td>
-          <td>{{ kb.outstandingBalance | currency }}</td>
+        <tr *ngFor="let balance of balances">
+          <td>{{ balance.kidId }}</td>
+          <td>{{ balance.kidName }}</td>
+          <td>{{ balance.outstandingBalance | currency }}</td>
         </tr>
       </tbody>
     </table>
