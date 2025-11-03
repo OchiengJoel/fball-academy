@@ -1,0 +1,11 @@
+<div class="card shadow-sm h-100">
+  <div class="card-header">Invoices vs Payments (last 7 days)</div>
+  <div class="card-body">
+    <canvas baseChart
+            [datasets]="barChartData"
+            [labels]="barChartLabels"
+            [options]="barChartOptions"
+            chartType="bar">
+    </canvas>
+  </div>
+</div>

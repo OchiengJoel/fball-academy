@@ -4,15 +4,46 @@
   </div>
   <nav class="nav flex-column">
     <a class="nav-link text-white" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
-    <a class="nav-link text-white" routerLink="/kids" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Kids</a>
-    <a class="nav-link text-white" routerLink="/item-types" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Item Types</a>
-    <a class="nav-link text-white" routerLink="/fee-invoices" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Fee Invoices</a>
-    <a class="nav-link text-white" routerLink="/payments" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Payments</a>
-    <a class="nav-link text-white" routerLink="/progress" *ngIf="user?.role === 'ADMIN' || user?.role === 'PARENT' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Progress</a>
-    <a class="nav-link text-white" routerLink="/statements" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Statements</a>
-    <a class="nav-link text-white" routerLink="/kids-outstanding-balances" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Balances</a>
-    <a class="nav-link text-white" routerLink="/notifications" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Notifications</a>
-    <a class="nav-link text-white" routerLink="/cashbooks" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Cashbooks</a>
-    <a class="nav-link text-white" routerLink="/users" *ngIf="user?.role === 'ADMIN' || user?.role === 'SUPER_ADMIN'" routerLinkActive="active">Users</a>
+
+    <ng-container *ngIf="user$ | async as user; else loading">
+      <a class="nav-link text-white" routerLink="/kids"
+        *ngIf="user.role === 'ADMIN' || user.role === 'PARENT' || user.role === 'SUPER_ADMIN'"
+        routerLinkActive="active">Kids</a>
+
+      <a class="nav-link text-white" routerLink="/item-types"
+        *ngIf="user.role === 'ADMIN' || user.role === 'PARENT' || user.role === 'SUPER_ADMIN'"
+        routerLinkActive="active">Item Types</a>
+
+      <a class="nav-link text-white" routerLink="/fee-invoices"
+        *ngIf="user.role === 'ADMIN' || user.role === 'PARENT' || user.role === 'SUPER_ADMIN'"
+        routerLinkActive="active">Fee Invoices</a>
+
+      <a class="nav-link text-white" routerLink="/payments"
+        *ngIf="user.role === 'ADMIN' || user.role === 'PARENT' || user.role === 'SUPER_ADMIN'"
+        routerLinkActive="active">Payments</a>
+
+      <a class="nav-link text-white" routerLink="/progress"
+        *ngIf="user.role === 'ADMIN' || user.role === 'PARENT' || user.role === 'SUPER_ADMIN'"
+        routerLinkActive="active">Progress</a>
+
+      <a class="nav-link text-white" routerLink="/statements"
+        *ngIf="user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'" routerLinkActive="active">Statements</a>
+
+      <a class="nav-link text-white" routerLink="/kids-outstanding-balances"
+        *ngIf="user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'" routerLinkActive="active">Balances</a>
+
+      <a class="nav-link text-white" routerLink="/notifications"
+        *ngIf="user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'" routerLinkActive="active">Notifications</a>
+
+      <a class="nav-link text-white" routerLink="/cashbooks"
+        *ngIf="user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'" routerLinkActive="active">Cashbooks</a>
+
+      <a class="nav-link text-white" routerLink="/users" *ngIf="user.role === 'ADMIN' || user.role === 'SUPER_ADMIN'"
+        routerLinkActive="active">Users</a>
+    </ng-container>
+
+    <ng-template #loading>
+      <div class="text-center text-muted small p-3">Loading menu...</div>
+    </ng-template>
   </nav>
 </div>

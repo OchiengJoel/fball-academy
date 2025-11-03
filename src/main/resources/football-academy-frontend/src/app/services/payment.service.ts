@@ -1,12 +1,13 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Payment } from '../models/payment';
-import { Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { Page } from '../models/page';
 import { InvoiceItemAllocationDTO } from '../models/invoice-item-allocation-dto';
 import { PaymentAllocationRequest } from '../models/payment-allocation-request';
 import { KidOutstandingBalance } from '../models/kid-outstanding-balance';
 import { DateUtilsComponent } from '../utils/date-utils/date-utils.component';
+import { PaymentSummaryDTO } from '../models/payment-summary-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -67,10 +68,19 @@ export class PaymentService {
     return this.http.get<KidOutstandingBalance[]>(`${this.apiUrl}/outstanding-balances`);
   }
 
-  // getOutstandingBalances(): Observable<KidOutstandingBalance[]> {
-  //   const { startDate, endDate } = DateUtilsComponent.getDefaultDateRange();
-  //   return this.http.get<KidOutstandingBalance[]>(`${this.apiUrl}/outstanding-balances`, {
-  //     params: { start: startDate, end: endDate }
-  //   });
-  // }
+  getPaymentSummary(start: string, end: string): Observable<PaymentSummaryDTO> {
+  return this.http.get<PaymentSummaryDTO>(`${this.apiUrl}/summary`, {
+    params: { start, end }
+  }).pipe(catchError(this.handleError));
+}
+
+  private handleError(error: HttpErrorResponse): Observable<never> {
+      let errorMessage = 'An error occurred';
+      if (error.error instanceof ErrorEvent) {
+        errorMessage = `Client error: ${error.error.message}`;
+      } else {
+        errorMessage = `Server error: ${error.status} - ${error.error?.message || error.message}`;
+      }
+      return throwError(() => new Error(errorMessage));
+    }
 }

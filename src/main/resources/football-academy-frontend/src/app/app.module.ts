@@ -3,6 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { ReactiveFormsModule} from '@angular/forms';
+import { NgChartsModule } from 'ng2-charts';
+
 
 
 import { AppRoutingModule } from './app-routing.module';
@@ -43,6 +45,11 @@ import { ItemTypeManagementComponent } from './components/item-type-management/i
 import { CashbooksComponent } from './components/cashbooks/cashbooks.component';
 import { DateUtilsComponent } from './utils/date-utils/date-utils.component';
 import { OutstandingBalancesComponent } from './components/outstanding-balances/outstanding-balances.component';
+import { KpiCardComponent } from './components/shared/kpi-card/kpi-card.component';
+import { QuickLinkCardComponent } from './components/shared/quick-link-card/quick-link-card.component';
+import { SkeletonCardComponent } from './components/shared/skeleton-card/skeleton-card.component';
+import { InvoicePaymentChartComponent } from './components/payments/invoice-payment-chart/invoice-payment-chart.component';
+import { BalanceAgingChartComponent } from './components/shared/balance-aging-chart/balance-aging-chart.component';
 
 @NgModule({
   declarations: [
@@ -70,12 +77,18 @@ import { OutstandingBalancesComponent } from './components/outstanding-balances/
     CashbooksComponent,
     DateUtilsComponent,
     OutstandingBalancesComponent,
+    KpiCardComponent,
+    QuickLinkCardComponent,
+    SkeletonCardComponent,
+    InvoicePaymentChartComponent,
+    BalanceAgingChartComponent,
     
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     FormsModule,
+    NgChartsModule,
     HttpClientModule,
     ReactiveFormsModule,
     MatDialogModule,

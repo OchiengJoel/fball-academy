@@ -1,0 +1,19 @@
+<div class="card shadow-sm h-100 kpi-card" [style.--kpi-color]="kpi.color">
+  <div class="card-body d-flex flex-column justify-content-between">
+    <div class="d-flex align-items-center">
+      <i class="fa {{kpi.icon}} fa-2x me-3" [style.color]="kpi.color"></i>
+      <div>
+        <h5 class="card-title mb-0">{{kpi.title}}</h5>
+        <p class="card-text text-muted">{{kpi.subtitle}}</p>
+      </div>
+    </div>
+    <div class="mt-3">
+      <h3 class="mb-0">{{kpi.value | number:'1.0-0'}}</h3>
+      <small *ngIf="kpi.change !== undefined"
+             class="text-success"
+             [class.text-danger]="kpi.change < 0">
+        {{kpi.change > 0 ? '+' : ''}}{{kpi.change}}%
+      </small>
+    </div>
+  </div>
+</div>

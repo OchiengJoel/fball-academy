@@ -6,23 +6,45 @@ import { AuthResponse } from '../models/auth-response';
 import { PasswordResetRequest } from '../models/password-reset-request';
 import { PasswordResetConfirmRequest } from '../models/password-reset-confirm-request';
 import { User } from '../models/user';
+import { UserStateService } from './user-state.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
 
- private apiUrl = 'http://localhost:8082/api/auth';
+  private apiUrl = 'http://localhost:8082/api/auth';
   private userApiUrl = 'http://localhost:8082/api/users';
   private cachedUser: User | null = null;
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private userStateService: UserStateService
+  
+  ) { }
 
   login(request: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.apiUrl}/login`, request).pipe(
-      tap(response => this.storeTokens(response))
+      tap(response => {
+        this.storeTokens(response);
+        localStorage.setItem('email', request.email); // Save email
+        this.loadUser(request.email); // Load user immediately
+      })
     );
   }
+
+  private loadUser(email: string): void {
+  this.http.get<User>(`${this.userApiUrl}/${email}`).subscribe({
+    next: (user) => {
+      this.userStateService.setUser(user); // Notify all components
+      localStorage.setItem('user', JSON.stringify(user));
+    },
+    error: (err) => {
+      console.error('Failed to load user:', err);
+      this.userStateService.setUser(null);
+    }
+  });
+}
 
   getCurrentUser(email: string): Observable<User> {
     // Check if user is cached

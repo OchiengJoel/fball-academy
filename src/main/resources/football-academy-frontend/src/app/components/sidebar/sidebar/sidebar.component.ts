@@ -1,5 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subject } from 'rxjs';
 import { User } from 'src/app/models/user';
+import { UserStateService } from 'src/app/services/user-state.service';
 import { UserService } from 'src/app/services/user.service';
 
 @Component({
@@ -7,20 +9,21 @@ import { UserService } from 'src/app/services/user.service';
   templateUrl: './sidebar.component.html',
   styleUrls: ['./sidebar.component.css']
 })
-export class SidebarComponent implements OnInit {
+export class SidebarComponent implements OnDestroy {
+  user$ = this.userStateService.user$;
+  private destroy$ = new Subject<void>();
 
-  user: User | null = null;
-
-  constructor(private userService: UserService) { }
-
-  ngOnInit() {
-    const email = localStorage.getItem('email');
-    if (email) {
-      this.userService.getUserByEmail(email).subscribe({
-        next: (user) => (this.user = user),
-        error: (err) => console.error('Failed to load user data:', err)
-      });
+  constructor(private userStateService: UserStateService) {
+    // Optional: Load from localStorage if not in memory
+    const cached = localStorage.getItem('user');
+    if (cached && !this.userStateService.getUser()) {
+      this.userStateService.setUser(JSON.parse(cached));
     }
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
 }

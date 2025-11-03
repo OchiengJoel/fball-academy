@@ -1,32 +1,80 @@
-<div class="container-fluid">
-  <h2 class="mb-4">Welcome, {{ user?.firstName }}!</h2>
-  <div class="row">
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body text-center">
-          <h5 class="card-title">Manage Kids</h5>
-          <p class="card-text">View and manage player profiles.</p>
-          <a routerLink="/kids" class="btn btn-primary">Go to Kids</a>
-        </div>
+<div class="container-fluid dashboard">
+  <!-- Header -->
+  <h2 class="mb-4">
+    Welcome, {{ user?.firstName ?? 'Guest' }}!
+    <small class="text-muted" *ngIf="user?.role">({{ user?.role | titlecase }})</small>
+  </h2>
+
+  <!-- Loading skeleton -->
+  <ng-container *ngIf="loading; else content">
+    <div class="row">
+      <div class="col-md-4 col-sm-6 mb-4" *ngFor="let _ of [].constructor(6)">
+        <app-skeleton-card></app-skeleton-card>
       </div>
     </div>
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body text-center">
-          <h5 class="card-title">Fee Invoices</h5>
-          <p class="card-text">Track and create invoices.</p>
-          <a routerLink="/fee-invoices" class="btn btn-primary">Go to Invoices</a>
-        </div>
+  </ng-container>
+
+  <!-- Real content -->
+  <ng-template #content>
+    <div class="row">
+
+      <!-- ==== KPI CARDS ==== -->
+      <div class="col-lg-3 col-md-4 col-sm-6 mb-4" *ngFor="let kpi of kpis">
+        <app-kpi-card [kpi]="kpi"></app-kpi-card>
       </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card shadow-sm">
-        <div class="card-body text-center">
-          <h5 class="card-title">Progress Tracking</h5>
-          <p class="card-text">Monitor player performance.</p>
-          <a routerLink="/progress" class="btn btn-primary">Go to Progress</a>
+
+      <!-- ==== QUICK LINK CARDS (only for admins) ==== -->
+      <ng-container *ngIf="isAdminOrSuperAdmin">
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+          <app-quick-link-card
+            title="Manage Kids"
+            description="View and manage player profiles."
+            icon="fa-users"
+            routerLink="/kids"
+            color="#007bff">
+          </app-quick-link-card>
         </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+          <app-quick-link-card
+            title="Fee Invoices"
+            description="Create & track invoices."
+            icon="fa-file-invoice-dollar"
+            routerLink="/fee-invoices"
+            color="#28a745">
+          </app-quick-link-card>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+          <app-quick-link-card
+            title="Payments"
+            description="Record and allocate payments."
+            icon="fa-money-bill-wave"
+            routerLink="/payments"
+            color="#ffc107">
+          </app-quick-link-card>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+          <app-quick-link-card
+            title="Outstanding Balances"
+            description="Aging report & collection."
+            icon="fa-exclamation-triangle"
+            routerLink="/kids-outstanding-balances"
+            color="#dc3545">
+          </app-quick-link-card>
+        </div>
+      </ng-container>
+
+      <!-- ==== CHARTS (admin only) ==== -->
+      <div class="col-12 col-lg-6 mb-4" *ngIf="isAdminOrSuperAdmin">
+        <app-invoice-payment-chart [data]="chartData"></app-invoice-payment-chart>
       </div>
+
+      <div class="col-12 col-lg-6 mb-4" *ngIf="isAdminOrSuperAdmin">
+        <app-balance-aging-chart [aging]="balanceAging"></app-balance-aging-chart>
+      </div>
+
     </div>
-  </div>
+  </ng-template>
 </div>

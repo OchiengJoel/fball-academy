@@ -1,0 +1,13 @@
+<div class="card shadow-sm h-100 quick-link-card">
+  <div class="card-body text-center d-flex flex-column justify-content-between">
+    <i class="fa {{icon}} fa-3x mb-3" [style.color]="color"></i>
+    <h5 class="card-title">{{title}}</h5>
+    <p class="card-text flex-grow-1">{{description}}</p>
+    <a [routerLink]="routerLink"
+       class="btn mt-2"
+       [style.background-color]="color"
+       [style.border-color]="color">
+      Go
+    </a>
+  </div>
+</div>

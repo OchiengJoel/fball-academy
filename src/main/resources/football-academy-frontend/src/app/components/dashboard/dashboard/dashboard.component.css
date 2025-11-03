@@ -1,15 +1,32 @@
-.card {
-  transition: transform 0.2s;
+.dashboard {
+  padding: 2rem;
+  background: #f8f9fa;
 }
 
-.card:hover {
-  transform: translateY(-5px);
+.kpi-card {
+  border-left: 4px solid var(--kpi-color);
+  transition: transform .2s, box-shadow .2s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0,0,0,.12);
+  }
 }
 
-.card-title {
-  color: #007bff;
+.quick-link-card {
+  .btn {
+    color: #fff;
+    font-weight: 600;
+  }
 }
 
-.container-fluid {
-  padding: 20px;
+.skeleton-card .placeholder {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
 }

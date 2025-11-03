@@ -8,16 +8,20 @@ import { ItemType } from '../components/enums/item-type.enum';
 import { InvoiceItemRequest } from '../models/invoice-item-request';
 import { ManualInvoiceRequest } from '../models/manual-invoice-request';
 import { KidOutstandingBalance } from '../models/kid-outstanding-balance';
+import { InvoiceSummaryDTO } from '../models/invoice-summary-dto';
+import { PaymentSummaryDTO } from '../models/payment-summary-dto';
 
 
 @Injectable({
-    providedIn: 'root'
+  providedIn: 'root'
 })
 
 export class FeeInvoiceService {
   private apiUrl = 'http://localhost:8082/api/fee-invoices';
+  private apiUrl2 = 'http://localhost:8082/api/payments';
 
-  constructor(private http: HttpClient) {}
+
+  constructor(private http: HttpClient) { }
 
   // createInvoice(kidId: number, dueDate: string): Observable<FeeInvoice> {
   //   return this.http
@@ -26,13 +30,13 @@ export class FeeInvoiceService {
   // }
 
   createInvoice(request: any): Observable<FeeInvoice> {
-        return this.http.post<FeeInvoice>(this.apiUrl, request).pipe(catchError(this.handleError));
-    }
+    return this.http.post<FeeInvoice>(this.apiUrl, request).pipe(catchError(this.handleError));
+  }
 
 
   createManualInvoice(request: ManualInvoiceRequest): Observable<FeeInvoice> {
-        return this.http.post<FeeInvoice>(`${this.apiUrl}/manual`, request).pipe(catchError(this.handleError));
-    }
+    return this.http.post<FeeInvoice>(`${this.apiUrl}/manual`, request).pipe(catchError(this.handleError));
+  }
 
   generateBatchInvoices(request: { kidIds: number[]; startDate: string; endDate: string; dueDate: string }): Observable<FeeInvoice[]> {
     return this.http
@@ -75,6 +79,19 @@ export class FeeInvoiceService {
       .get<{ [key in keyof typeof ItemType]: number }>(`${this.apiUrl}/report`, { params: { start, end } })
       .pipe(catchError(this.handleError));
   }
+
+  getInvoiceSummary(start: string, end: string): Observable<InvoiceSummaryDTO> {
+  return this.http.get<InvoiceSummaryDTO>(`${this.apiUrl}/summary`, {
+    params: { start, end }
+  }).pipe(catchError(this.handleError));
+}
+
+  // payment.service.ts
+  getPaymentSummary(start: string, end: string): Observable<PaymentSummaryDTO> {
+  return this.http.get<PaymentSummaryDTO>(`${this.apiUrl}/summary`, {
+    params: { start, end }
+  }).pipe(catchError(this.handleError));
+}
 
   private handleError(error: HttpErrorResponse): Observable<never> {
     let errorMessage = 'An error occurred';
